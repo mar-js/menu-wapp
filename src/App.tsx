@@ -1,6 +1,6 @@
 import type { JSX } from "react/jsx-runtime";
 import { Route, Router, Switch } from "wouter";
-import { ProtectedRoute } from "./components/public/ProtectedRoute";
+import { ProtectedRoute } from "./components/admin/ProtectedRoute";
 import { Dashboard } from "./pages/admin/Dashboard";
 import { Login } from "./pages/admin/Login";
 import { Home } from "./pages/public/Home";
