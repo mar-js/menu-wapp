@@ -2,6 +2,7 @@ import {
 	Eye,
 	EyeOff,
 	Image as ImageIcon,
+	Layers,
 	Package,
 	Plus,
 	QrCode,
@@ -74,6 +75,29 @@ export const Dashboard = (): JSX.Element => {
 			setLoading(false);
 		}
 	}, []);
+
+	const handleCreateCategory = async (e: React.FormEvent): Promise<void> => {
+		e.preventDefault();
+		if (!business || !newCategoryName.trim()) return;
+
+		try {
+			const { data, error } = await supabase
+				.from("categories")
+				.insert({
+					business_id: business.id,
+					name: newCategoryName.trim(),
+				})
+				.select()
+				.single();
+
+			if (!error && data) {
+				setCategories([...categories, data]);
+				setNewCategoryName("");
+			}
+		} catch (error) {
+			console.error("Error al crear la categoría:", error);
+		}
+	};
 
 	const handleCreateProduct = async (e: React.FormEvent): Promise<void> => {
 		e.preventDefault();
@@ -199,6 +223,17 @@ export const Dashboard = (): JSX.Element => {
 					</button>
 					<button
 						type="button"
+						onClick={() => setActiveTab("categories")}
+						className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+							activeTab === "categories"
+								? "bg-emerald-600 text-white"
+								: "bg-white text-gray-600 hover:bg-gray-50"
+						}`}
+					>
+						<Layers size={16} /> Categorías
+					</button>
+					<button
+						type="button"
 						onClick={() => setActiveTab("qr")}
 						className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
 							activeTab === "qr"
@@ -251,6 +286,27 @@ export const Dashboard = (): JSX.Element => {
 										className="w-full p-2 border border-gray-300 rounded-lg text-sm"
 										id="productPrice"
 									/>
+								</div>
+								<div>
+									<label
+										className="block text-xs font-semibold text-gray-600 mb-1"
+										htmlFor="productCategory"
+									>
+										Categoría
+									</label>
+									<select
+										id="productCategory"
+										value={selectedCategory}
+										onChange={(e) => setSelectedCategory(e.target.value)}
+										className="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white"
+									>
+										<option value="">Sin categoría</option>
+										{categories.map((cat) => (
+											<option key={cat.id} value={cat.id}>
+												{cat.name}
+											</option>
+										))}
+									</select>
 								</div>
 								<div>
 									<label
@@ -367,6 +423,39 @@ export const Dashboard = (): JSX.Element => {
 						<p className="text-xs font-mono text-emerald-700 break-all bg-emerald-50 p-2 rounded-lg">
 							{publicMenuUrl}
 						</p>
+					</div>
+				)}
+
+				{activeTab === "categories" && (
+					<div className="max-w-md bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
+						<h2 className="font-bold text-gray-800">Crear Categoría</h2>
+						<form onSubmit={handleCreateCategory} className="flex gap-2">
+							<input
+								type="text"
+								required
+								value={newCategoryName}
+								onChange={(e) => setNewCategoryName(e.target.value)}
+								placeholder="Ej. Bebidas, Postres"
+								className="flex-1 p-2 border border-gray-300 rounded-lg text-sm"
+							/>
+							<button
+								type="submit"
+								className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors"
+							>
+								Agregar
+							</button>
+						</form>
+
+						<div className="divide-y divide-gray-100 pt-2">
+							{categories.map((cat) => (
+								<div
+									key={cat.id}
+									className="py-2.5 flex justify-between items-center text-sm"
+								>
+									<span className="font-medium text-gray-700">{cat.name}</span>
+								</div>
+							))}
+						</div>
 					</div>
 				)}
 			</main>
