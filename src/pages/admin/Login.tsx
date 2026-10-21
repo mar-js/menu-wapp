@@ -1,8 +1,9 @@
-import { ArrowRight, Lock, Mail, Store } from "lucide-react";
+import { ArrowRight, Phone, Store } from "lucide-react";
 import { useState } from "react";
-import type { JSX } from "react/jsx-dev-runtime";
+import type { JSX } from "react/jsx-runtime";
 import { useLocation } from "wouter";
 import { supabase } from "../../lib/supabase";
+import { formatArgentinianPhone } from "../../utils/phone";
 
 export const Login = (): JSX.Element => {
 	const [, setLocation] = useLocation();
@@ -21,7 +22,9 @@ export const Login = (): JSX.Element => {
 
 		try {
 			if (isRegistering) {
-				// 1. Crear usuario en Supabase Auth
+				// Formatear el teléfono automáticamente a formato internacional
+				const formattedPhone = formatArgentinianPhone(whatsappNumber);
+
 				const { data: authData, error: authError } = await supabase.auth.signUp(
 					{
 						email,
@@ -32,18 +35,16 @@ export const Login = (): JSX.Element => {
 				if (authError) throw authError;
 
 				if (authData.user) {
-					// Generar slug automático a partir del nombre del negocio
 					const slug = businessName
 						.toLowerCase()
 						.trim()
 						.replace(/[\s\W-]+/g, "-");
 
-					// 2. Crear registro inicial en la tabla 'businesses'
 					const { error: bizError } = await supabase.from("businesses").insert({
 						owner_id: authData.user.id,
 						name: businessName,
 						slug,
-						whatsapp_number: whatsappNumber,
+						whatsapp_number: formattedPhone, // Guardamos el número normalizado (ej: 549381XXXXXXX)
 						currency_symbol: "$",
 					});
 
@@ -51,7 +52,6 @@ export const Login = (): JSX.Element => {
 					setLocation("/admin");
 				}
 			} else {
-				// Login existente
 				const { error: loginError } = await supabase.auth.signInWithPassword({
 					email,
 					password,
@@ -80,11 +80,6 @@ export const Login = (): JSX.Element => {
 						? "Creá tu cuenta en MenuWapp"
 						: "Iniciar sesión en MenuWapp"}
 				</h2>
-				<p className="mt-1 text-xs text-gray-500">
-					{isRegistering
-						? "Empezá a vender por WhatsApp en minutos"
-						: "Gestioná tus productos y menú digital"}
-				</p>
 			</div>
 
 			<div className="mt-8 sm:mx-auto sm:w-full sm:max-w-md">
@@ -121,17 +116,26 @@ export const Login = (): JSX.Element => {
 										className="block text-xs font-semibold text-gray-700 mb-1"
 										htmlFor="whatsappNumber"
 									>
-										Número de WhatsApp (con código de país)
+										Número de WhatsApp
 									</label>
-									<input
-										id="whatsappNumber"
-										type="text"
-										required
-										value={whatsappNumber}
-										onChange={(e) => setWhatsappNumber(e.target.value)}
-										placeholder="Ej. 5491122334455"
-										className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-									/>
+									<div className="relative">
+										<input
+											id="whatsappNumber"
+											type="tel"
+											required
+											value={whatsappNumber}
+											onChange={(e) => setWhatsappNumber(e.target.value)}
+											placeholder="Ej. 381 123 4567 o 11 2345 6789"
+											className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+										/>
+										<Phone
+											size={16}
+											className="absolute left-3 top-2.5 text-gray-400"
+										/>
+									</div>
+									<span className="text-[10px] text-gray-400 mt-1 block">
+										Ingresá tu característica local y número sin el 0 ni el 15.
+									</span>
 								</div>
 							</>
 						)}
@@ -143,21 +147,15 @@ export const Login = (): JSX.Element => {
 							>
 								Correo Electrónico
 							</label>
-							<div className="relative">
-								<input
-									id="email"
-									type="email"
-									required
-									value={email}
-									onChange={(e) => setEmail(e.target.value)}
-									placeholder="tu@email.com"
-									className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-								/>
-								<Mail
-									size={16}
-									className="absolute left-3 top-2.5 text-gray-400"
-								/>
-							</div>
+							<input
+								id="email"
+								type="email"
+								required
+								value={email}
+								onChange={(e) => setEmail(e.target.value)}
+								placeholder="tu@email.com"
+								className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+							/>
 						</div>
 
 						<div>
@@ -167,27 +165,21 @@ export const Login = (): JSX.Element => {
 							>
 								Contraseña
 							</label>
-							<div className="relative">
-								<input
-									id="password"
-									type="password"
-									required
-									value={password}
-									onChange={(e) => setPassword(e.target.value)}
-									placeholder="••••••••"
-									className="w-full pl-9 pr-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-								/>
-								<Lock
-									size={16}
-									className="absolute left-3 top-2.5 text-gray-400"
-								/>
-							</div>
+							<input
+								id="password"
+								type="password"
+								required
+								value={password}
+								onChange={(e) => setPassword(e.target.value)}
+								placeholder="••••••••"
+								className="w-full px-3 py-2 border border-gray-300 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+							/>
 						</div>
 
 						<button
 							type="submit"
 							disabled={loading}
-							className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-xl text-sm shadow-sm transition-colors flex items-center justify-center gap-2"
+							className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
 						>
 							{loading ? (
 								<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
