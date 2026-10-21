@@ -12,9 +12,12 @@
     "@supabase/supabase-js": "^2.118.0",
     "@tailwindcss/vite": "^4.3.3",
     "lucide-react": "^1.61.0",
+    "qrcode.react": "^4.2.0",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
-    "tailwindcss": "^4.3.3"
+    "tailwindcss": "^4.3.3",
+    "wouter": "^3.13.0",
+    "zustand": "^5.0.15"
   },
   "devDependencies": {
     "@babel/core": "^7.29.7",
