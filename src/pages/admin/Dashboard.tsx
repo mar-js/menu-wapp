@@ -1,7 +1,7 @@
 import {
 	Eye,
 	EyeOff,
-	Layers,
+	Image as ImageIcon,
 	Package,
 	Plus,
 	QrCode,
@@ -10,15 +10,17 @@ import {
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useCallback, useEffect, useState } from "react";
-import type { JSX } from "react/jsx-dev-runtime";
+import type { JSX } from "react/jsx-runtime";
 import type { IBusiness, ICategory, IProduct } from "../../interfaces";
 import { supabase } from "../../lib/supabase";
+import { uploadProductImage } from "../../utils/storage";
 
 export const Dashboard = (): JSX.Element => {
 	const [business, setBusiness] = useState<IBusiness | null>(null);
 	const [categories, setCategories] = useState<ICategory[]>([]);
 	const [products, setProducts] = useState<IProduct[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
+	const [uploadingImage, setUploadingImage] = useState<boolean>(false);
 	const [activeTab, setActiveTab] = useState<"products" | "categories" | "qr">(
 		"products",
 	);
@@ -29,6 +31,7 @@ export const Dashboard = (): JSX.Element => {
 	const [newProductPrice, setNewProductPrice] = useState<string>("");
 	const [newProductDesc, setNewProductDesc] = useState<string>("");
 	const [selectedCategory, setSelectedCategory] = useState<string>("");
+	const [imageFile, setImageFile] = useState<File | null>(null);
 
 	const fetchAdminData = useCallback(async (): Promise<void> => {
 		try {
@@ -38,7 +41,6 @@ export const Dashboard = (): JSX.Element => {
 			} = await supabase.auth.getUser();
 			if (!user) return;
 
-			// Cargar datos del negocio
 			const { data: bizData } = await supabase
 				.from("businesses")
 				.select("*")
@@ -48,7 +50,6 @@ export const Dashboard = (): JSX.Element => {
 			if (bizData) {
 				setBusiness(bizData);
 
-				// Cargar categorías
 				const { data: catData } = await supabase
 					.from("categories")
 					.select("*")
@@ -56,7 +57,6 @@ export const Dashboard = (): JSX.Element => {
 					.order("sort_order", { ascending: true });
 				setCategories(catData || []);
 
-				// Cargar productos
 				const { data: prodData } = await supabase
 					.from("products")
 					.select("*")
@@ -64,53 +64,50 @@ export const Dashboard = (): JSX.Element => {
 				setProducts(prodData || []);
 			}
 		} catch (error) {
-			console.error("Error cargando datos del dashboard:", error);
+			console.error("Error cargando datos:", error);
 		} finally {
 			setLoading(false);
 		}
 	}, []);
 
-	const handleCreateCategory = async (e: React.FormEvent): Promise<void> => {
-		e.preventDefault();
-		if (!business || !newCategoryName.trim()) return;
-
-		const { data, error } = await supabase
-			.from("categories")
-			.insert({
-				business_id: business.id,
-				name: newCategoryName,
-			})
-			.select()
-			.single();
-
-		if (!error && data) {
-			setCategories([...categories, data]);
-			setNewCategoryName("");
-		}
-	};
-
 	const handleCreateProduct = async (e: React.FormEvent): Promise<void> => {
 		e.preventDefault();
 		if (!business || !newProductName.trim() || !newProductPrice) return;
 
-		const { data, error } = await supabase
-			.from("products")
-			.insert({
-				business_id: business.id,
-				category_id: selectedCategory || null,
-				name: newProductName,
-				description: newProductDesc,
-				price: parseFloat(newProductPrice),
-				is_available: true,
-			})
-			.select()
-			.single();
+		try {
+			setUploadingImage(true);
+			let imageUrl: string | null = null;
 
-		if (!error && data) {
-			setProducts([...products, data]);
-			setNewProductName("");
-			setNewProductPrice("");
-			setNewProductDesc("");
+			// Si hay una foto seleccionada, la subimos a Supabase Storage
+			if (imageFile) {
+				imageUrl = await uploadProductImage(imageFile);
+			}
+
+			const { data, error } = await supabase
+				.from("products")
+				.insert({
+					business_id: business.id,
+					category_id: selectedCategory || null,
+					name: newProductName,
+					description: newProductDesc,
+					price: parseFloat(newProductPrice),
+					image_url: imageUrl,
+					is_available: true,
+				})
+				.select()
+				.single();
+
+			if (!error && data) {
+				setProducts([...products, data]);
+				setNewProductName("");
+				setNewProductPrice("");
+				setNewProductDesc("");
+				setImageFile(null);
+			}
+		} catch (error) {
+			console.error("Error al guardar el producto:", error);
+		} finally {
+			setUploadingImage(false);
 		}
 	};
 
@@ -154,7 +151,6 @@ export const Dashboard = (): JSX.Element => {
 
 	return (
 		<div className="min-h-screen bg-gray-100">
-			{/* Top Navbar */}
 			<header className="bg-white border-b border-gray-200 sticky top-0 z-10">
 				<div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
 					<div className="flex items-center gap-2">
@@ -175,7 +171,6 @@ export const Dashboard = (): JSX.Element => {
 			</header>
 
 			<main className="max-w-5xl mx-auto px-4 py-6">
-				{/* Navigation Tabs */}
 				<div className="flex gap-2 border-b border-gray-200 mb-6 pb-2">
 					<button
 						type="button"
@@ -190,17 +185,6 @@ export const Dashboard = (): JSX.Element => {
 					</button>
 					<button
 						type="button"
-						onClick={() => setActiveTab("categories")}
-						className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
-							activeTab === "categories"
-								? "bg-emerald-600 text-white"
-								: "bg-white text-gray-600 hover:bg-gray-50"
-						}`}
-					>
-						<Layers size={16} /> Categorías
-					</button>
-					<button
-						type="button"
 						onClick={() => setActiveTab("qr")}
 						className={`flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
 							activeTab === "qr"
@@ -212,10 +196,8 @@ export const Dashboard = (): JSX.Element => {
 					</button>
 				</div>
 
-				{/* TAB: PRODUCTOS */}
 				{activeTab === "products" && (
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-						{/* Formulario de Alta */}
 						<div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm h-fit">
 							<h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
 								<Plus size={18} /> Nuevo Producto
@@ -224,29 +206,28 @@ export const Dashboard = (): JSX.Element => {
 								<div>
 									<label
 										className="block text-xs font-semibold text-gray-600 mb-1"
-										htmlFor="name"
+										htmlFor="productName"
 									>
 										Nombre
 									</label>
 									<input
-										id="name"
 										type="text"
 										required
 										value={newProductName}
 										onChange={(e) => setNewProductName(e.target.value)}
 										placeholder="Ej. Hamburguesa Doble"
 										className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+										id="productName"
 									/>
 								</div>
 								<div>
 									<label
 										className="block text-xs font-semibold text-gray-600 mb-1"
-										htmlFor="price"
+										htmlFor="productPrice"
 									>
 										Precio ($)
 									</label>
 									<input
-										id="price"
 										type="number"
 										step="0.01"
 										required
@@ -254,66 +235,77 @@ export const Dashboard = (): JSX.Element => {
 										onChange={(e) => setNewProductPrice(e.target.value)}
 										placeholder="2500"
 										className="w-full p-2 border border-gray-300 rounded-lg text-sm"
+										id="productPrice"
 									/>
 								</div>
 								<div>
 									<label
 										className="block text-xs font-semibold text-gray-600 mb-1"
-										htmlFor="category"
+										htmlFor="productImage"
 									>
-										Categoría
+										Imagen del Producto
 									</label>
-									<select
-										id="category"
-										value={selectedCategory}
-										onChange={(e) => setSelectedCategory(e.target.value)}
-										className="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white"
-									>
-										<option value="">Sin categoría</option>
-										{categories.map((cat) => (
-											<option key={cat.id} value={cat.id}>
-												{cat.name}
-											</option>
-										))}
-									</select>
+									<div className="flex items-center gap-2 border border-gray-300 p-2 rounded-lg bg-gray-50">
+										<ImageIcon size={18} className="text-gray-400" />
+										<input
+											type="file"
+											accept="image/*"
+											onChange={(e) =>
+												setImageFile(e.target.files?.[0] || null)
+											}
+											className="text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
+											id="productImage"
+										/>
+									</div>
 								</div>
 								<div>
 									<label
 										className="block text-xs font-semibold text-gray-600 mb-1"
-										htmlFor="description"
+										htmlFor="productDescription"
 									>
 										Descripción
 									</label>
 									<textarea
-										id="description"
+										id="productDescription"
 										rows={2}
 										value={newProductDesc}
 										onChange={(e) => setNewProductDesc(e.target.value)}
-										placeholder="Ingredientes o detalle..."
+										placeholder="Detalle del producto..."
 										className="w-full p-2 border border-gray-300 rounded-lg text-sm"
 									/>
 								</div>
 								<button
 									type="submit"
-									className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg text-sm transition-colors"
+									disabled={uploadingImage}
+									className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
 								>
-									Agregar Producto
+									{uploadingImage ? (
+										<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+									) : (
+										"Guardar Producto"
+									)}
 								</button>
 							</form>
 						</div>
 
-						{/* Listado de Productos */}
 						<div className="md:col-span-2 space-y-3">
-							{products.length === 0 ? (
-								<div className="bg-white p-8 rounded-xl text-center text-gray-500 border border-gray-200">
-									Aún no agregaste productos.
-								</div>
-							) : (
-								products.map((p) => (
-									<div
-										key={p.id}
-										className="bg-white p-4 rounded-xl border border-gray-200 flex items-center justify-between shadow-sm"
-									>
+							{products.map((p) => (
+								<div
+									key={p.id}
+									className="bg-white p-4 rounded-xl border border-gray-200 flex items-center justify-between shadow-sm"
+								>
+									<div className="flex items-center gap-3">
+										{p.image_url ? (
+											<img
+												src={p.image_url}
+												alt={p.name}
+												className="w-14 h-14 object-cover rounded-lg border"
+											/>
+										) : (
+											<div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
+												<ImageIcon size={20} />
+											</div>
+										)}
 										<div>
 											<h3 className="font-bold text-gray-800 text-sm">
 												{p.name}
@@ -323,83 +315,38 @@ export const Dashboard = (): JSX.Element => {
 												${p.price.toFixed(2)}
 											</span>
 										</div>
-										<div className="flex items-center gap-2">
-											<button
-												type="button"
-												onClick={() => toggleProductAvailability(p)}
-												className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1 ${
-													p.is_available
-														? "bg-emerald-50 text-emerald-700"
-														: "bg-gray-100 text-gray-500"
-												}`}
-												title="Cambiar visibilidad"
-											>
-												{p.is_available ? (
-													<Eye size={16} />
-												) : (
-													<EyeOff size={16} />
-												)}
-											</button>
-											<button
-												type="button"
-												onClick={() => handleDeleteProduct(p.id)}
-												className="p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-												title="Eliminar"
-											>
-												<Trash2 size={16} />
-											</button>
-										</div>
 									</div>
-								))
-							)}
-						</div>
-					</div>
-				)}
-
-				{/* TAB: CATEGORÍAS */}
-				{activeTab === "categories" && (
-					<div className="max-w-md bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
-						<h2 className="font-bold text-gray-800">Crear Categoría</h2>
-						<form onSubmit={handleCreateCategory} className="flex gap-2">
-							<input
-								type="text"
-								required
-								value={newCategoryName}
-								onChange={(e) => setNewCategoryName(e.target.value)}
-								placeholder="Ej. Bebidas, Postres"
-								className="flex-1 p-2 border border-gray-300 rounded-lg text-sm"
-							/>
-							<button
-								type="submit"
-								className="bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors"
-							>
-								Agregar
-							</button>
-						</form>
-
-						<div className="divide-y divide-gray-100 pt-2">
-							{categories.map((cat) => (
-								<div
-									key={cat.id}
-									className="py-2.5 flex justify-between items-center text-sm"
-								>
-									<span className="font-medium text-gray-700">{cat.name}</span>
+									<div className="flex items-center gap-2">
+										<button
+											type="button"
+											onClick={() => toggleProductAvailability(p)}
+											className="p-2 rounded-lg text-xs bg-gray-100"
+										>
+											{p.is_available ? (
+												<Eye size={16} />
+											) : (
+												<EyeOff size={16} />
+											)}
+										</button>
+										<button
+											type="button"
+											onClick={() => handleDeleteProduct(p.id)}
+											className="p-2 text-red-500 hover:bg-red-50 rounded-lg"
+										>
+											<Trash2 size={16} />
+										</button>
+									</div>
 								</div>
 							))}
 						</div>
 					</div>
 				)}
 
-				{/* TAB: CÓDIGO QR */}
 				{activeTab === "qr" && (
 					<div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm max-w-md mx-auto text-center space-y-4">
 						<h2 className="font-bold text-lg text-gray-800">
 							Código QR del Menú
 						</h2>
-						<p className="text-xs text-gray-500">
-							Imprimí este código para colocarlo en las mesas o mostrador de tu
-							local.
-						</p>
 						<div className="p-4 bg-white border border-gray-200 rounded-xl inline-block shadow-inner">
 							<QRCodeSVG value={publicMenuUrl} size={200} />
 						</div>
