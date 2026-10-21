@@ -1,3 +1,13 @@
+export interface IBusiness {
+	id: string;
+	owner_id: string;
+	name: string;
+	slug: string;
+	whatsapp_number: string;
+	currency_symbol: string;
+	is_active: boolean;
+}
+
 export interface ICategory {
 	id: string;
 	business_id: string;
