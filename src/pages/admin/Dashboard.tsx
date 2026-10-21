@@ -33,6 +33,11 @@ export const Dashboard = (): JSX.Element => {
 	const [selectedCategory, setSelectedCategory] = useState<string>("");
 	const [imageFile, setImageFile] = useState<File | null>(null);
 
+	const handleLogout = async (): Promise<void> => {
+		await supabase.auth.signOut();
+		window.location.href = "/admin/login";
+	};
+
 	const fetchAdminData = useCallback(async (): Promise<void> => {
 		try {
 			setLoading(true);
@@ -159,14 +164,23 @@ export const Dashboard = (): JSX.Element => {
 							{business?.name || "Panel Admin"}
 						</h1>
 					</div>
-					<a
-						href={publicMenuUrl}
-						target="_blank"
-						rel="noreferrer"
-						className="text-xs bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg font-semibold hover:bg-emerald-100 transition-colors"
-					>
-						Ver Menú Público ↗
-					</a>
+					<div className="flex items-center gap-3">
+						<a
+							href={publicMenuUrl}
+							target="_blank"
+							rel="noreferrer"
+							className="text-xs bg-emerald-50 text-emerald-700 px-3 py-1.5 rounded-lg font-semibold hover:bg-emerald-100 transition-colors"
+						>
+							Ver Menú Público ↗
+						</a>
+						<button
+							type="button"
+							onClick={handleLogout}
+							className="text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+						>
+							Cerrar Sesión
+						</button>
+					</div>
 				</div>
 			</header>
 
