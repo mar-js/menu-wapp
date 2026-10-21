@@ -1,3 +1,13 @@
+export interface ICartState {
+	items: ICartItem[];
+	addItem: (product: IProduct) => void;
+	removeItem: (productId: string) => void;
+	updateQuantity: (productId: string, quantity: number) => void;
+	updateNotes: (productId: string, notes: string) => void;
+	clearCart: () => void;
+	getTotal: () => number;
+}
+
 export interface IBusiness {
 	id: string;
 	owner_id: string;
