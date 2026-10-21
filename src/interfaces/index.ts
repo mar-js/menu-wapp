@@ -1,3 +1,10 @@
+export interface ICategory {
+	id: string;
+	business_id: string;
+	name: string;
+	sort_order: number;
+}
+
 export interface IProduct {
 	id: string;
 	business_id: string;
