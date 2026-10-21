@@ -1,5 +1,6 @@
 import type { JSX } from "react/jsx-runtime";
 import { Route, Router, Switch } from "wouter";
+import { ProtectedRoute } from "./components/public/ProtectedRoute";
 import { Dashboard } from "./pages/admin/Dashboard";
 import { Login } from "./pages/admin/Login";
 import { Home } from "./pages/public/Home";
@@ -9,15 +10,15 @@ export const App = (): JSX.Element => {
 	return (
 		<Router>
 			<Switch>
-				{/* Landing Page Principal */}
+				{/* Rutas Públicas Libre Acceso */}
 				<Route path="/" component={Home} />
-
-				{/* Rutas de Administración */}
-				<Route path="/admin" component={Dashboard} />
 				<Route path="/admin/login" component={Login} />
-
-				{/* Ruta Pública del Menú por Slug */}
-				<Route path="/:slug" component={Menu} />
+				{/* Ruta Protegida: Blindada contra usuarios no autenticados */}
+				<Route path="/admin">
+					{() => <ProtectedRoute component={Dashboard} />}
+				</Route>
+				{/* Ruta Pública del Menú por Slug (al final para no colisionar con /admin) */}
+				<Route path="/:slug" component={Menu} />{" "}
 			</Switch>
 		</Router>
 	);
