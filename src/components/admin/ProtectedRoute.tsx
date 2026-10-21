@@ -1,15 +1,12 @@
 import { useEffect, useState } from "react";
 import type { JSX } from "react/jsx-runtime";
 import { useLocation } from "wouter";
+import type { IProtectedRoute } from "../../interfaces";
 import { supabase } from "../../lib/supabase";
-
-interface IProtectedRouteProps {
-	component: () => JSX.Element;
-}
 
 export const ProtectedRoute = ({
 	component: Component,
-}: IProtectedRouteProps): JSX.Element => {
+}: IProtectedRoute): JSX.Element => {
 	const [, setLocation] = useLocation();
 	const [isAuthenticated, setIsAuthenticated] = useState<boolean | null>(null);
 

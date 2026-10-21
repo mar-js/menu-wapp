@@ -1,3 +1,9 @@
+import type { JSX } from "react/jsx-dev-runtime";
+
+export interface IProtectedRoute {
+	component: () => JSX.Element;
+}
+
 export interface ICartState {
 	items: ICartItem[];
 	addItem: (product: IProduct) => void;
