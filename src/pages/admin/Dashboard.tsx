@@ -31,6 +31,7 @@ export const Dashboard = (): JSX.Element => {
 	const [newProductName, setNewProductName] = useState<string>("");
 	const [newProductPrice, setNewProductPrice] = useState<string>("");
 	const [newProductDesc, setNewProductDesc] = useState<string>("");
+	const [newProductStock, setNewProductStock] = useState<string>("");
 	const [selectedCategory, setSelectedCategory] = useState<string>("");
 	const [imageFile, setImageFile] = useState<File | null>(null);
 
@@ -120,6 +121,7 @@ export const Dashboard = (): JSX.Element => {
 					name: newProductName,
 					description: newProductDesc,
 					price: parseFloat(newProductPrice),
+					stock: newProductStock ? parseInt(newProductStock, 10) : null,
 					image_url: imageUrl,
 					is_available: true,
 				})
@@ -285,6 +287,22 @@ export const Dashboard = (): JSX.Element => {
 										placeholder="2500"
 										className="w-full p-2 border border-gray-300 rounded-lg text-sm"
 										id="productPrice"
+									/>
+								</div>
+								<div>
+									<label
+										className="block text-xs font-semibold text-gray-600 mb-1"
+										htmlFor="productStock"
+									>
+										Stock / Cantidad disponible (Opcional)
+									</label>
+									<input
+										id="productStock"
+										type="number"
+										value={newProductStock}
+										onChange={(e) => setNewProductStock(e.target.value)}
+										placeholder="Ej. 20 (vacío = ilimitado)"
+										className="w-full p-2 border border-gray-300 rounded-lg text-sm"
 									/>
 								</div>
 								<div>
