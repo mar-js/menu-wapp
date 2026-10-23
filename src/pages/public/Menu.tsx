@@ -329,6 +329,63 @@ export const Menu = (): JSX.Element => {
 							})}
 						</div>
 
+						{/* Formulario de Datos para WhatsApp */}
+						<form
+							id="checkout-form"
+							onSubmit={handleCheckout}
+							className="p-4 space-y-4"
+						>
+							<div>
+								<label
+									className="block text-xs font-medium text-gray-700 mb-1"
+									htmlFor="customerName"
+								>
+									Tu Nombre *
+								</label>
+								<input
+									id="customerName"
+									type="text"
+									required
+									value={customerName}
+									onChange={(e) => setCustomerName(e.target.value)}
+									placeholder="Ej. Juan Pérez"
+									className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+								/>
+							</div>
+							<div>
+								<label
+									className="block text-xs font-medium text-gray-700 mb-1"
+									htmlFor="customerAddress"
+								>
+									Dirección de Entrega (Opcional)
+								</label>
+								<input
+									id="customerAddress"
+									type="text"
+									value={customerAddress}
+									onChange={(e) => setCustomerAddress(e.target.value)}
+									placeholder="Ej. Av. San Martín 123"
+									className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+								/>
+							</div>
+							<div>
+								<label
+									className="block text-xs font-medium text-gray-700 mb-1"
+									htmlFor="customerNotes"
+								>
+									Notas para el local (Opcional)
+								</label>
+								<input
+									id="customerNotes"
+									type="text"
+									value={customerNotes}
+									onChange={(e) => setCustomerNotes(e.target.value)}
+									placeholder="Ej. Sin cebolla, por favor"
+									className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+								/>
+							</div>
+						</form>
+
 						{/* Footer Modal / Botón Enviar WhatsApp */}
 						<div className="p-4 border-t border-gray-100 bg-gray-50">
 							<div className="flex justify-between mb-3 font-bold text-gray-900">
