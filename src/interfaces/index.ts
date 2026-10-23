@@ -40,6 +40,7 @@ export interface IProduct {
 	price: number;
 	image_url: string | null;
 	is_available: boolean;
+	stock?: number | null;
 }
 
 export interface ICartItem {
