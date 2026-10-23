@@ -179,14 +179,24 @@ export const Menu = (): JSX.Element => {
 									{product.price.toFixed(2)}
 								</p>
 							</div>
-							<button
-								type="button"
-								onClick={() => addItem(product)}
-								className="w-9 h-9 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 flex items-center justify-center transition-colors shrink-0"
-								aria-label="Agregar al carrito"
-							>
-								<Plus size={18} />
-							</button>
+
+							{/* Control de Stock: Muestra 'Agotado' o el botón '+' */}
+							{product.stock !== null &&
+							product.stock !== undefined &&
+							product.stock <= 0 ? (
+								<span className="text-xs bg-red-100 text-red-600 px-2.5 py-1 rounded-lg font-bold shrink-0">
+									Agotado
+								</span>
+							) : (
+								<button
+									type="button"
+									onClick={() => addItem(product)}
+									className="w-9 h-9 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 flex items-center justify-center transition-colors shrink-0"
+									aria-label="Agregar al carrito"
+								>
+									<Plus size={18} />
+								</button>
+							)}
 						</div>
 					))
 				)}
