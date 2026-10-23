@@ -242,111 +242,91 @@ export const Menu = (): JSX.Element => {
 
 						{/* Items del Carrito */}
 						<div className="p-4 overflow-y-auto flex-1 space-y-3">
-							{items.map((item) => (
-								<div
-									key={item.product.id}
-									className="flex flex-col gap-1 border-b border-gray-100 pb-3"
-								>
-									<div className="flex items-center justify-between">
-										<span className="font-medium text-sm text-gray-900">
-											{item.product.name}
-										</span>
-										<span className="font-semibold text-sm text-gray-800">
-											{business.currency_symbol}
-											{(item.product.price * item.quantity).toFixed(2)}
-										</span>
-									</div>
-									<div className="flex items-center justify-between mt-1">
-										<div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
-											<button
-												type="button"
-												onClick={() =>
-													updateQuantity(item.product.id, item.quantity - 1)
-												}
-												className="p-1 text-gray-600 hover:text-black"
-											>
-												<Minus size={14} />
-											</button>
-											<span className="text-xs font-bold px-2">
-												{item.quantity}
+							{items.map((item) => {
+								// Verificamos si hay un límite de stock para este producto
+								const hasStockLimit =
+									item.product.stock !== null &&
+									item.product.stock !== undefined;
+								const isAtMaxStock =
+									hasStockLimit &&
+									item.quantity >= (item.product.stock as number);
+
+								return (
+									<div
+										key={item.product.id}
+										className="flex flex-col gap-1 border-b border-gray-100 pb-3"
+									>
+										<div className="flex items-center justify-between">
+											<span className="font-medium text-sm text-gray-900">
+												{item.product.name}
 											</span>
+											<span className="font-semibold text-sm text-gray-800">
+												{business.currency_symbol}
+												{(item.product.price * item.quantity).toFixed(2)}
+											</span>
+										</div>
+
+										<div className="flex items-center justify-between mt-1">
+											<div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+												<button
+													type="button"
+													onClick={() =>
+														updateQuantity(item.product.id, item.quantity - 1)
+													}
+													className="p-1 text-gray-600 hover:text-black"
+												>
+													<Minus size={14} />
+												</button>
+												<span className="text-xs font-bold px-2">
+													{item.quantity}
+												</span>
+												<button
+													type="button"
+													onClick={() => {
+														// Validar antes de incrementar si supera el stock
+														if (
+															hasStockLimit &&
+															item.quantity >= (item.product.stock as number)
+														) {
+															return; // No hacer nada si ya alcanzó el límite
+														}
+														updateQuantity(item.product.id, item.quantity + 1);
+													}}
+													disabled={isAtMaxStock}
+													className={`p-1 ${
+														isAtMaxStock
+															? "text-gray-300 cursor-not-allowed"
+															: "text-gray-600 hover:text-black"
+													}`}
+													title={
+														isAtMaxStock
+															? "Alcanzaste el stock máximo disponible"
+															: "Aumentar cantidad"
+													}
+												>
+													<Plus size={14} />
+												</button>
+											</div>
+
 											<button
 												type="button"
-												onClick={() =>
-													updateQuantity(item.product.id, item.quantity + 1)
-												}
-												className="p-1 text-gray-600 hover:text-black"
+												onClick={() => removeItem(item.product.id)}
+												className="text-red-500 hover:text-red-700 p-1"
 											>
-												<Plus size={14} />
+												<Trash2 size={16} />
 											</button>
 										</div>
-										<button
-											type="button"
-											onClick={() => removeItem(item.product.id)}
-											className="text-red-500 hover:text-red-700 p-1"
-										>
-											<Trash2 size={16} />
-										</button>
-									</div>
-								</div>
-							))}
 
-							{/* Formulario de Datos para WhatsApp */}
-							<form
-								id="checkout-form"
-								onSubmit={handleCheckout}
-								className="mt-4 space-y-3 pt-2"
-							>
-								<div>
-									<label
-										className="block text-xs font-medium text-gray-700 mb-1"
-										htmlFor="customerName"
-									>
-										Tu Nombre *
-									</label>
-									<input
-										id="customerName"
-										type="text"
-										required
-										value={customerName}
-										onChange={(e) => setCustomerName(e.target.value)}
-										placeholder="Ej. Juan Pérez"
-										className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-									/>
-								</div>
-								<div>
-									<label
-										className="block text-xs font-medium text-gray-700 mb-1"
-										htmlFor="customerAddress"
-									>
-										Dirección de Entrega (Opcional)
-									</label>
-									<input
-										id="customerAddress"
-										type="text"
-										value={customerAddress}
-										onChange={(e) => setCustomerAddress(e.target.value)}
-										placeholder="Ej. Av. San Martín 123"
-										className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-									/>
-								</div>
-								<div>
-									<label
-										className="block text-xs font-medium text-gray-700 mb-1"
-										htmlFor="customerNotes"
-									>
-										Notas para el local (Opcional)
-									</label>
-									<input
-										id="customerNotes"
-										type="text"
-										value={customerNotes}
-										onChange={(e) => setCustomerNotes(e.target.value)}
-										placeholder="Ej. Sin cebolla, por favor"
-										className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-									/>
-								</div>
-							</form>
+										{/* Advertencia visual si está al límite de stock */}
+										{isAtMaxStock && (
+											<span className="text-[10px] text-amber-600 font-medium">
+												Máximo stock disponible alcanzado ({item.product.stock}{" "}
+												un.)
+											</span>
+										)}
+									</div>
+								);
+							})}
 						</div>
 
 						{/* Footer Modal / Botón Enviar WhatsApp */}
