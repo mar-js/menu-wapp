@@ -334,16 +334,43 @@ export const Dashboard = (): JSX.Element => {
 										Imagen del Producto
 									</label>
 									<div className="flex items-center gap-2 border border-gray-300 p-2 rounded-lg bg-gray-50">
-										<ImageIcon size={18} className="text-gray-400" />
+										<ImageIcon size={18} className="text-gray-400 shrink-0" />
+
+										{/* Input de archivo oculto */}
 										<input
 											type="file"
 											accept="image/*"
+											id="productImage"
+											className="hidden"
 											onChange={(e) =>
 												setImageFile(e.target.files?.[0] || null)
 											}
-											className="text-xs text-gray-500 file:mr-2 file:py-1 file:px-2 file:rounded-md file:border-0 file:text-xs file:font-semibold file:bg-emerald-50 file:text-emerald-700 hover:file:bg-emerald-100"
-											id="productImage"
 										/>
+
+										{/* Label personalizado que actúa como botón */}
+										<label
+											htmlFor="productImage"
+											className="flex-1 text-xs text-gray-600 truncate cursor-pointer bg-white border border-gray-200 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors flex items-center justify-between"
+										>
+											<span className="truncate">
+												{imageFile ? imageFile.name : "Seleccionar imagen..."}
+											</span>
+											<span className="bg-emerald-50 text-emerald-700 font-semibold px-2 py-0.5 rounded text-[10px] shrink-0 ml-2">
+												Examinar
+											</span>
+										</label>
+
+										{/* Botón para quitar la imagen seleccionada si se arrepiente */}
+										{imageFile && (
+											<button
+												type="button"
+												onClick={() => setImageFile(null)}
+												className="text-red-500 hover:text-red-700 text-xs font-medium px-1 shrink-0"
+												title="Quitar imagen"
+											>
+												✕
+											</button>
+										)}
 									</div>
 								</div>
 								<div>
