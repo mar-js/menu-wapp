@@ -117,12 +117,17 @@ export const Menu = (): JSX.Element => {
 
 	const totalItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
-	const hasStockError = items.some(
-		(item) =>
-			item.product.stock !== null &&
-			item.product.stock !== undefined &&
-			item.quantity > (item.product.stock as number),
-	);
+	// Compara el carrito contra la lista fresca de productos (products)
+	const hasStockError = items.some((item) => {
+		const realProduct = products.find((p) => p.id === item.product.id);
+		if (!realProduct) return false;
+
+		return (
+			realProduct.stock !== null &&
+			realProduct.stock !== undefined &&
+			item.quantity > realProduct.stock
+		);
+	});
 
 	return (
 		<div className="min-h-screen bg-gray-50 pb-24">
@@ -255,18 +260,31 @@ export const Menu = (): JSX.Element => {
 						{/* Items del Carrito */}
 						<div className="p-4 overflow-y-auto flex-1 space-y-3">
 							{items.map((item) => {
-								// Verificamos si hay un límite de stock para este producto
+								// Buscamos el producto actualizado de la lista
+								const currentProduct =
+									products.find((p) => p.id === item.product.id) ||
+									item.product;
+
 								const hasStockLimit =
-									item.product.stock !== null &&
-									item.product.stock !== undefined;
+									currentProduct.stock !== null &&
+									currentProduct.stock !== undefined;
+
 								const isAtMaxStock =
 									hasStockLimit &&
-									item.quantity >= (item.product.stock as number);
+									item.quantity >= (currentProduct.stock as number);
+
+								const isOverStock =
+									hasStockLimit &&
+									item.quantity > (currentProduct.stock as number);
 
 								return (
 									<div
 										key={item.product.id}
-										className="flex flex-col gap-1 border-b border-gray-100 pb-3"
+										className={`flex flex-col gap-1 border-b pb-3 ${
+											isOverStock
+												? "border-red-200 bg-red-50/50 p-2 rounded-xl"
+												: "border-gray-100"
+										}`}
 									>
 										<div className="flex items-center justify-between">
 											<span className="font-medium text-sm text-gray-900">
@@ -295,14 +313,14 @@ export const Menu = (): JSX.Element => {
 												<button
 													type="button"
 													onClick={() => {
-														// Validar antes de incrementar si supera el stock
-														if (
-															hasStockLimit &&
-															item.quantity >= (item.product.stock as number)
-														) {
-															return; // No hacer nada si ya alcanzó el límite
-														}
-														updateQuantity(item.product.id, item.quantity + 1);
+														const currentProduct =
+															products.find((p) => p.id === item.product.id) ||
+															item.product;
+														updateQuantity(
+															item.product.id,
+															item.quantity + 1,
+															currentProduct.stock,
+														);
 													}}
 													disabled={isAtMaxStock}
 													className={`p-1 ${
@@ -310,11 +328,6 @@ export const Menu = (): JSX.Element => {
 															? "text-gray-300 cursor-not-allowed"
 															: "text-gray-600 hover:text-black"
 													}`}
-													title={
-														isAtMaxStock
-															? "Alcanzaste el stock máximo disponible"
-															: "Aumentar cantidad"
-													}
 												>
 													<Plus size={14} />
 												</button>
@@ -329,13 +342,18 @@ export const Menu = (): JSX.Element => {
 											</button>
 										</div>
 
-										{/* Advertencia visual si está al límite de stock */}
-										{isAtMaxStock && (
-											<span className="text-[10px] text-amber-600 font-medium">
-												Máximo stock disponible alcanzado ({item.product.stock}{" "}
-												unidades)
+										{/* Mensajes visuales de advertencia */}
+										{isOverStock ? (
+											<span className="text-[10px] text-red-600 font-bold">
+												⚠️ Supera el stock disponible (Máximo:{" "}
+												{currentProduct.stock} un.)
 											</span>
-										)}
+										) : isAtMaxStock ? (
+											<span className="text-[10px] text-amber-600 font-medium">
+												Máximo stock disponible alcanzado (
+												{currentProduct.stock} un.)
+											</span>
+										) : null}
 									</div>
 								);
 							})}
