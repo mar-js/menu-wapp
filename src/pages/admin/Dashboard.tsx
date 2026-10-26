@@ -35,6 +35,7 @@ export const Dashboard = (): JSX.Element => {
 	const [selectedCategory, setSelectedCategory] = useState<string>("");
 	const [imageFile, setImageFile] = useState<File | null>(null);
 	const [isCreatingCategory, setIsCreatingCategory] = useState(false);
+	const [quickCategoryName, setQuickCategoryName] = useState<string>("");
 
 	const handleLogout = async (): Promise<void> => {
 		await supabase.auth.signOut();
@@ -349,7 +350,7 @@ export const Dashboard = (): JSX.Element => {
 										</option>
 									</select>
 
-									{/* Input rápido modal o desplegable si el usuario elige crear una */}
+									{/* Input rápido desplegable para crear categoría al vuelo */}
 									{isCreatingCategory && (
 										<div className="mt-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg space-y-2">
 											<p className="text-xs font-bold text-emerald-900">
@@ -358,20 +359,38 @@ export const Dashboard = (): JSX.Element => {
 											<div className="flex gap-2">
 												<input
 													type="text"
-													value={newCategoryName}
-													onChange={(e) => setNewCategoryName(e.target.value)}
+													value={quickCategoryName}
+													onChange={(e) => setQuickCategoryName(e.target.value)}
 													placeholder="Ej. Bebidas, Pizzas..."
 													className="w-full p-1.5 border border-emerald-300 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
 												/>
 												<button
 													type="button"
 													onClick={async () => {
-														if (!newCategoryName.trim()) return;
-														// Aquí llamas a tu función de crear categoría en Supabase y la seleccionas automáticamente
-														// Ejemplo: const newCat = await createCategory(newCategoryName);
-														// setSelectedCategory(newCat.id);
-														setNewCategoryName("");
-														setIsCreatingCategory(false);
+														if (!business || !quickCategoryName.trim()) return;
+
+														try {
+															const { data, error } = await supabase
+																.from("categories")
+																.insert({
+																	business_id: business.id,
+																	name: quickCategoryName.trim(),
+																})
+																.select()
+																.single();
+
+															if (!error && data) {
+																setCategories([...categories, data]);
+																setSelectedCategory(data.id); // La selecciona automáticamente para el producto actual
+																setQuickCategoryName("");
+																setIsCreatingCategory(false);
+															}
+														} catch (error) {
+															console.error(
+																"Error al crear categoría rápida:",
+																error,
+															);
+														}
 													}}
 													className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-md text-xs font-semibold shrink-0"
 												>
@@ -379,7 +398,10 @@ export const Dashboard = (): JSX.Element => {
 												</button>
 												<button
 													type="button"
-													onClick={() => setIsCreatingCategory(false)}
+													onClick={() => {
+														setQuickCategoryName("");
+														setIsCreatingCategory(false);
+													}}
 													className="text-gray-500 hover:text-gray-700 text-xs px-2 py-1.5 shrink-0"
 												>
 													Cancelar
