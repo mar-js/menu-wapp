@@ -168,6 +168,36 @@ export const Dashboard = (): JSX.Element => {
 		}
 	};
 
+	const handleDeleteCategory = async (categoryId: string): Promise<void> => {
+		try {
+			const { error } = await supabase
+				.from("categories")
+				.delete()
+				.eq("id", categoryId);
+
+			if (!error) {
+				// 1. Quitamos la categoría de la lista local
+				setCategories(categories.filter((c) => c.id !== categoryId));
+
+				// 2. Si el producto que se estaba creando tenía esta categoría seleccionada, reseteamos la selección
+				if (selectedCategory === categoryId) {
+					setSelectedCategory("");
+				}
+
+				// 3. Sincronizamos en los productos locales para que pasen a "Sin categoría"
+				setProducts(
+					products.map((p) =>
+						p.category_id === categoryId ? { ...p, category_id: null } : p,
+					),
+				);
+			} else {
+				console.error("Error al eliminar la categoría:", error);
+			}
+		} catch (error) {
+			console.error("Error al eliminar la categoría:", error);
+		}
+	};
+
 	useEffect(() => {
 		fetchAdminData();
 	}, [fetchAdminData]);
@@ -582,6 +612,14 @@ export const Dashboard = (): JSX.Element => {
 									className="py-2.5 flex justify-between items-center text-sm"
 								>
 									<span className="font-medium text-gray-700">{cat.name}</span>
+									<button
+										type="button"
+										onClick={() => handleDeleteCategory(cat.id)}
+										className="p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+										title="Eliminar categoría"
+									>
+										<Trash2 size={16} />
+									</button>
 								</div>
 							))}
 						</div>
