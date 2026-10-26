@@ -15,25 +15,24 @@ export const useCartStore = create<ICartState>((set, get) => ({
 		if (existingIndex > -1) {
 			const currentQty = currentItems[existingIndex].quantity;
 
-			// Si hay límite de stock, validamos que no lo supere
 			if (
 				maxStock !== null &&
 				maxStock !== undefined &&
 				currentQty >= maxStock
 			) {
-				return; // No sumamos más si ya alcanzó el límite
+				return;
 			}
 
 			const updated = [...currentItems];
 			updated[existingIndex] = {
 				...updated[existingIndex],
-				product, // Actualizamos el objeto product por si cambió su stock real
+				product,
 				quantity: currentQty + 1,
 			};
 			set({ items: updated });
 		} else {
 			if (maxStock !== null && maxStock !== undefined && maxStock <= 0) {
-				return; // No agregar si el stock inicial es 0
+				return;
 			}
 			set({ items: [...currentItems, { product, quantity: 1 }] });
 		}
@@ -49,8 +48,8 @@ export const useCartStore = create<ICartState>((set, get) => ({
 			return;
 		}
 
-		// Si se pasa del stock máximo permitido, frenamos ahí
 		if (maxStock !== null && maxStock !== undefined && quantity > maxStock) {
+			// Bloqueamos el incremento si supera el stock máximo
 			return;
 		}
 
