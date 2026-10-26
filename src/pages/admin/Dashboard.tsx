@@ -34,6 +34,7 @@ export const Dashboard = (): JSX.Element => {
 	const [newProductStock, setNewProductStock] = useState<string>("");
 	const [selectedCategory, setSelectedCategory] = useState<string>("");
 	const [imageFile, setImageFile] = useState<File | null>(null);
+	const [isCreatingCategory, setIsCreatingCategory] = useState(false);
 
 	const handleLogout = async (): Promise<void> => {
 		await supabase.auth.signOut();
@@ -306,16 +307,32 @@ export const Dashboard = (): JSX.Element => {
 									/>
 								</div>
 								<div>
-									<label
-										className="block text-xs font-semibold text-gray-600 mb-1"
-										htmlFor="productCategory"
-									>
-										Categoría
-									</label>
+									<div className="flex items-center justify-between mb-1">
+										<label
+											className="block text-xs font-semibold text-gray-600"
+											htmlFor="productCategory"
+										>
+											Categoría
+										</label>
+										<button
+											type="button"
+											onClick={() => setIsCreatingCategory(true)}
+											className="text-xs text-emerald-600 hover:text-emerald-700 font-semibold flex items-center gap-1"
+										>
+											+ Nueva categoría
+										</button>
+									</div>
+
 									<select
 										id="productCategory"
 										value={selectedCategory}
-										onChange={(e) => setSelectedCategory(e.target.value)}
+										onChange={(e) => {
+											if (e.target.value === "__NEW__") {
+												setIsCreatingCategory(true);
+											} else {
+												setSelectedCategory(e.target.value);
+											}
+										}}
 										className="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white"
 									>
 										<option value="">Sin categoría</option>
@@ -324,7 +341,52 @@ export const Dashboard = (): JSX.Element => {
 												{cat.name}
 											</option>
 										))}
+										<option
+											value="__NEW__"
+											className="text-emerald-600 font-semibold bg-emerald-50"
+										>
+											✨ + Crear nueva categoría...
+										</option>
 									</select>
+
+									{/* Input rápido modal o desplegable si el usuario elige crear una */}
+									{isCreatingCategory && (
+										<div className="mt-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg space-y-2">
+											<p className="text-xs font-bold text-emerald-900">
+												Nueva Categoría
+											</p>
+											<div className="flex gap-2">
+												<input
+													type="text"
+													value={newCategoryName}
+													onChange={(e) => setNewCategoryName(e.target.value)}
+													placeholder="Ej. Bebidas, Pizzas..."
+													className="w-full p-1.5 border border-emerald-300 rounded-md text-xs bg-white focus:outline-none focus:ring-1 focus:ring-emerald-500"
+												/>
+												<button
+													type="button"
+													onClick={async () => {
+														if (!newCategoryName.trim()) return;
+														// Aquí llamas a tu función de crear categoría en Supabase y la seleccionas automáticamente
+														// Ejemplo: const newCat = await createCategory(newCategoryName);
+														// setSelectedCategory(newCat.id);
+														setNewCategoryName("");
+														setIsCreatingCategory(false);
+													}}
+													className="bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-md text-xs font-semibold shrink-0"
+												>
+													Guardar
+												</button>
+												<button
+													type="button"
+													onClick={() => setIsCreatingCategory(false)}
+													className="text-gray-500 hover:text-gray-700 text-xs px-2 py-1.5 shrink-0"
+												>
+													Cancelar
+												</button>
+											</div>
+										</div>
+									)}
 								</div>
 								<div>
 									<label
