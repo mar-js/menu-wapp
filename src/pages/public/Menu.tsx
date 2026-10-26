@@ -224,19 +224,40 @@ export const Menu = (): JSX.Element => {
 				<div className="fixed bottom-4 left-0 right-0 px-4 z-30 max-w-md mx-auto">
 					<button
 						type="button"
-						onClick={() => setIsCartOpen(true)}
-						className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3.5 px-6 rounded-2xl shadow-lg font-semibold flex items-center justify-between transition-transform active:scale-95"
+						onClick={() => {
+							if (hasStockError) return; // Si hay error de stock, no abre el carrito
+							setIsCartOpen(true);
+						}}
+						className={`w-full py-3.5 px-6 rounded-2xl shadow-lg font-semibold flex flex-col items-center justify-center transition-all ${
+							hasStockError
+								? "bg-red-600 hover:bg-red-700 text-white cursor-pointer"
+								: "bg-emerald-600 hover:bg-emerald-700 text-white active:scale-95"
+						}`}
 					>
-						<div className="flex items-center gap-2">
-							<span className="bg-emerald-800 text-xs px-2 py-0.5 rounded-full font-bold">
-								{totalItemsCount}
+						<div className="w-full flex items-center justify-between">
+							<div className="flex items-center gap-2">
+								<span
+									className={`text-xs px-2 py-0.5 rounded-full font-bold ${hasStockError ? "bg-red-800 text-white" : "bg-emerald-800 text-white"}`}
+								>
+									{totalItemsCount}
+								</span>
+								<span>
+									{hasStockError
+										? "⚠️ Revisar Stock en Pedido"
+										: "Ver mi pedido"}
+								</span>
+							</div>
+							<span>
+								{business.currency_symbol}
+								{getTotal().toFixed(2)}
 							</span>
-							<span>Ver mi pedido</span>
 						</div>
-						<span>
-							{business.currency_symbol}
-							{getTotal().toFixed(2)}
-						</span>
+						{hasStockError && (
+							<span className="text-[11px] font-normal mt-1 opacity-90">
+								Hay productos que superan el stock disponible. Tocá acá para
+								corregirlo.
+							</span>
+						)}
 					</button>
 				</div>
 			)}
