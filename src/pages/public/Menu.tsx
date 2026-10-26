@@ -65,27 +65,6 @@ export const Menu = (): JSX.Element => {
 		}
 	}, [slug]);
 
-	const handleCheckout = (e: React.FormEvent) => {
-		e.preventDefault();
-		if (
-			!business ||
-			items.length === 0 ||
-			!customerName.trim() ||
-			hasStockError
-		)
-			return;
-
-		const whatsappUrl = buildWhatsAppUrl(business, items, {
-			name: customerName,
-			address: customerAddress,
-			notes: customerNotes,
-		});
-
-		window.open(whatsappUrl, "_blank");
-		clearCart();
-		setIsCartOpen(false);
-	};
-
 	useEffect(() => {
 		fetchMenuData();
 	}, [fetchMenuData]);
@@ -117,17 +96,35 @@ export const Menu = (): JSX.Element => {
 
 	const totalItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
-	// Compara el carrito contra la lista fresca de productos (products)
+	// Evaluamos el error cruzando CADA item con su producto correspondiente de la DB
 	const hasStockError = items.some((item) => {
-		const realProduct = products.find((p) => p.id === item.product.id);
-		if (!realProduct) return false;
-
-		return (
-			realProduct.stock !== null &&
-			realProduct.stock !== undefined &&
-			item.quantity > realProduct.stock
-		);
+		const realProduct =
+			products.find((p) => p.id === item.product.id) || item.product;
+		if (realProduct.stock === null || realProduct.stock === undefined)
+			return false;
+		return item.quantity > realProduct.stock;
 	});
+
+	const handleCheckout = (e: React.FormEvent) => {
+		e.preventDefault();
+		if (
+			!business ||
+			items.length === 0 ||
+			!customerName.trim() ||
+			hasStockError
+		)
+			return;
+
+		const whatsappUrl = buildWhatsAppUrl(business, items, {
+			name: customerName,
+			address: customerAddress,
+			notes: customerNotes,
+		});
+
+		window.open(whatsappUrl, "_blank");
+		clearCart();
+		setIsCartOpen(false);
+	};
 
 	return (
 		<div className="min-h-screen bg-gray-50 pb-24">
@@ -146,7 +143,7 @@ export const Menu = (): JSX.Element => {
 					</div>
 				</div>
 
-				{/* Categorías (Tabs horizontales scrollables) */}
+				{/* Categorías */}
 				<div className="flex overflow-x-auto px-4 gap-2 border-t border-gray-100 py-2 scrollbar-none">
 					{categories.map((cat) => (
 						<button
@@ -172,50 +169,64 @@ export const Menu = (): JSX.Element => {
 						No hay productos disponibles en esta categoría.
 					</div>
 				) : (
-					filteredProducts.map((product) => (
-						<div
-							key={product.id}
-							className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 flex gap-3 items-center justify-between"
-						>
-							{product.image_url && (
-								<img
-									src={product.image_url}
-									alt={product.name}
-									className="w-20 h-20 object-cover rounded-lg shrink-0"
-								/>
-							)}
-							<div className="flex-1 min-w-0">
-								<h3 className="font-semibold text-gray-900 text-sm truncate">
-									{product.name}
-								</h3>
-								<p className="text-gray-500 text-xs line-clamp-2 mt-0.5">
-									{product.description}
-								</p>
-								<p className="font-bold text-emerald-700 text-sm mt-1">
-									{business.currency_symbol}
-									{product.price.toFixed(2)}
-								</p>
-							</div>
-
-							{/* Control de Stock: Muestra 'Agotado' o el botón '+' */}
-							{product.stock !== null &&
+					filteredProducts.map((product) => {
+						const cartItem = items.find((i) => i.product.id === product.id);
+						const currentQtyInCart = cartItem ? cartItem.quantity : 0;
+						const isAtMax =
+							product.stock !== null &&
 							product.stock !== undefined &&
-							product.stock <= 0 ? (
-								<span className="text-xs bg-red-100 text-red-600 px-2.5 py-1 rounded-lg font-bold shrink-0">
-									Agotado
-								</span>
-							) : (
-								<button
-									type="button"
-									onClick={() => addItem(product)}
-									className="w-9 h-9 rounded-full bg-emerald-50 hover:bg-emerald-100 text-emerald-700 flex items-center justify-center transition-colors shrink-0"
-									aria-label="Agregar al carrito"
-								>
-									<Plus size={18} />
-								</button>
-							)}
-						</div>
-					))
+							currentQtyInCart >= product.stock;
+
+						return (
+							<div
+								key={product.id}
+								className="bg-white rounded-xl p-3 shadow-sm border border-gray-100 flex gap-3 items-center justify-between"
+							>
+								{product.image_url && (
+									<img
+										src={product.image_url}
+										alt={product.name}
+										className="w-20 h-20 object-cover rounded-lg shrink-0"
+									/>
+								)}
+								<div className="flex-1 min-w-0">
+									<h3 className="font-semibold text-gray-900 text-sm truncate">
+										{product.name}
+									</h3>
+									<p className="text-gray-500 text-xs line-clamp-2 mt-0.5">
+										{product.description}
+									</p>
+									<p className="font-bold text-emerald-700 text-sm mt-1">
+										{business.currency_symbol}
+										{product.price.toFixed(2)}
+									</p>
+								</div>
+
+								{/* Control de Stock */}
+								{product.stock !== null &&
+								product.stock !== undefined &&
+								product.stock <= 0 ? (
+									<span className="text-xs bg-red-100 text-red-600 px-2.5 py-1 rounded-lg font-bold shrink-0">
+										Agotado
+									</span>
+								) : (
+									<button
+										type="button"
+										disabled={isAtMax}
+										onClick={() => addItem(product)}
+										className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors shrink-0 ${
+											isAtMax
+												? "bg-gray-100 text-gray-300 cursor-not-allowed"
+												: "bg-emerald-50 hover:bg-emerald-100 text-emerald-700"
+										}`}
+										aria-label="Agregar al carrito"
+									>
+										<Plus size={18} />
+									</button>
+								)}
+							</div>
+						);
+					})
 				)}
 			</main>
 
@@ -224,40 +235,29 @@ export const Menu = (): JSX.Element => {
 				<div className="fixed bottom-4 left-0 right-0 px-4 z-30 max-w-md mx-auto">
 					<button
 						type="button"
-						onClick={() => {
-							if (hasStockError) return; // Si hay error de stock, no abre el carrito
-							setIsCartOpen(true);
-						}}
-						className={`w-full py-3.5 px-6 rounded-2xl shadow-lg font-semibold flex flex-col items-center justify-center transition-all ${
+						onClick={() => setIsCartOpen(true)}
+						className={`w-full py-3.5 px-6 rounded-2xl shadow-lg font-semibold flex items-center justify-between transition-transform active:scale-95 ${
 							hasStockError
-								? "bg-red-600 hover:bg-red-700 text-white cursor-pointer"
-								: "bg-emerald-600 hover:bg-emerald-700 text-white active:scale-95"
+								? "bg-amber-600 text-white"
+								: "bg-emerald-600 text-white hover:bg-emerald-700"
 						}`}
 					>
-						<div className="w-full flex items-center justify-between">
-							<div className="flex items-center gap-2">
-								<span
-									className={`text-xs px-2 py-0.5 rounded-full font-bold ${hasStockError ? "bg-red-800 text-white" : "bg-emerald-800 text-white"}`}
-								>
-									{totalItemsCount}
-								</span>
-								<span>
-									{hasStockError
-										? "⚠️ Revisar Stock en Pedido"
-										: "Ver mi pedido"}
-								</span>
-							</div>
+						<div className="flex items-center gap-2">
+							<span
+								className={`text-xs px-2 py-0.5 rounded-full font-bold ${hasStockError ? "bg-amber-800" : "bg-emerald-800"}`}
+							>
+								{totalItemsCount}
+							</span>
 							<span>
-								{business.currency_symbol}
-								{getTotal().toFixed(2)}
+								{hasStockError
+									? "Revisar pedido (Stock excede)"
+									: "Ver mi pedido"}
 							</span>
 						</div>
-						{hasStockError && (
-							<span className="text-[11px] font-normal mt-1 opacity-90">
-								Hay productos que superan el stock disponible. Tocá acá para
-								corregirlo.
-							</span>
-						)}
+						<span>
+							{business.currency_symbol}
+							{getTotal().toFixed(2)}
+						</span>
 					</button>
 				</div>
 			)}
@@ -281,29 +281,24 @@ export const Menu = (): JSX.Element => {
 						{/* Items del Carrito */}
 						<div className="p-4 overflow-y-auto flex-1 space-y-3">
 							{items.map((item) => {
-								// Buscamos el producto actualizado de la lista
 								const currentProduct =
 									products.find((p) => p.id === item.product.id) ||
 									item.product;
 
+								const maxStock = currentProduct.stock;
 								const hasStockLimit =
-									currentProduct.stock !== null &&
-									currentProduct.stock !== undefined;
-
+									maxStock !== null && maxStock !== undefined;
 								const isAtMaxStock =
-									hasStockLimit &&
-									item.quantity >= (currentProduct.stock as number);
-
+									hasStockLimit && item.quantity >= (maxStock as number);
 								const isOverStock =
-									hasStockLimit &&
-									item.quantity > (currentProduct.stock as number);
+									hasStockLimit && item.quantity > (maxStock as number);
 
 								return (
 									<div
 										key={item.product.id}
 										className={`flex flex-col gap-1 border-b pb-3 ${
 											isOverStock
-												? "border-red-200 bg-red-50/50 p-2 rounded-xl"
+												? "border-red-200 bg-red-50 p-2 rounded-xl"
 												: "border-gray-100"
 										}`}
 									>
@@ -333,16 +328,13 @@ export const Menu = (): JSX.Element => {
 												</span>
 												<button
 													type="button"
-													onClick={() => {
-														const currentProduct =
-															products.find((p) => p.id === item.product.id) ||
-															item.product;
+													onClick={() =>
 														updateQuantity(
 															item.product.id,
 															item.quantity + 1,
-															currentProduct.stock,
-														);
-													}}
+															maxStock,
+														)
+													}
 													disabled={isAtMaxStock}
 													className={`p-1 ${
 														isAtMaxStock
@@ -363,79 +355,77 @@ export const Menu = (): JSX.Element => {
 											</button>
 										</div>
 
-										{/* Mensajes visuales de advertencia */}
 										{isOverStock ? (
-											<span className="text-[10px] text-red-600 font-bold">
-												⚠️ Supera el stock disponible (Máximo:{" "}
-												{currentProduct.stock} un.)
+											<span className="text-[10px] text-red-600 font-bold mt-1">
+												⚠️ Supera el stock disponible (Máximo disponible:{" "}
+												{maxStock} un.)
 											</span>
 										) : isAtMaxStock ? (
-											<span className="text-[10px] text-amber-600 font-medium">
-												Máximo stock disponible alcanzado (
-												{currentProduct.stock} un.)
+											<span className="text-[10px] text-amber-600 font-medium mt-1">
+												Llegaste al stock máximo disponible ({maxStock} un.)
 											</span>
 										) : null}
 									</div>
 								);
 							})}
-						</div>
 
-						{/* Formulario de Datos para WhatsApp */}
-						<form
-							id="checkout-form"
-							onSubmit={handleCheckout}
-							className="p-4 space-y-4"
-						>
-							<div>
-								<label
-									className="block text-xs font-medium text-gray-700 mb-1"
-									htmlFor="customerName"
-								>
-									Tu Nombre *
-								</label>
-								<input
-									id="customerName"
-									type="text"
-									required
-									value={customerName}
-									onChange={(e) => setCustomerName(e.target.value)}
-									placeholder="Ej. Juan Pérez"
-									className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-								/>
-							</div>
-							<div>
-								<label
-									className="block text-xs font-medium text-gray-700 mb-1"
-									htmlFor="customerAddress"
-								>
-									Dirección de Entrega (Opcional)
-								</label>
-								<input
-									id="customerAddress"
-									type="text"
-									value={customerAddress}
-									onChange={(e) => setCustomerAddress(e.target.value)}
-									placeholder="Ej. Av. San Martín 123"
-									className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-								/>
-							</div>
-							<div>
-								<label
-									className="block text-xs font-medium text-gray-700 mb-1"
-									htmlFor="customerNotes"
-								>
-									Notas para el local (Opcional)
-								</label>
-								<input
-									id="customerNotes"
-									type="text"
-									value={customerNotes}
-									onChange={(e) => setCustomerNotes(e.target.value)}
-									placeholder="Ej. Sin cebolla, por favor"
-									className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-								/>
-							</div>
-						</form>
+							{/* Formulario de Checkout */}
+							<form
+								id="checkout-form"
+								onSubmit={handleCheckout}
+								className="mt-4 space-y-3 pt-2"
+							>
+								<div>
+									<label
+										className="block text-xs font-medium text-gray-700 mb-1"
+										htmlFor="customerName"
+									>
+										Tu Nombre *
+									</label>
+									<input
+										id="customerName"
+										type="text"
+										required
+										value={customerName}
+										onChange={(e) => setCustomerName(e.target.value)}
+										placeholder="Ej. Juan Pérez"
+										className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+									/>
+								</div>
+								<div>
+									<label
+										className="block text-xs font-medium text-gray-700 mb-1"
+										htmlFor="customerAddress"
+									>
+										Dirección de Entrega (Opcional)
+									</label>
+									<input
+										id="customerAddress"
+										type="text"
+										value={customerAddress}
+										onChange={(e) => setCustomerAddress(e.target.value)}
+										placeholder="Ej. Av. San Martín 123"
+										className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+									/>
+								</div>
+								<div>
+									<label
+										className="block text-xs font-medium text-gray-700 mb-1"
+										htmlFor="customerNotes"
+									>
+										Notas para el local (Opcional)
+									</label>
+									<input
+										id="customerNotes"
+										type="text"
+										value={customerNotes}
+										onChange={(e) => setCustomerNotes(e.target.value)}
+										placeholder="Ej. Sin cebolla, por favor"
+										className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+									/>
+								</div>
+							</form>
+						</div>
 
 						{/* Footer Modal / Botón Enviar WhatsApp */}
 						<div className="p-4 border-t border-gray-100 bg-gray-50">
@@ -447,11 +437,10 @@ export const Menu = (): JSX.Element => {
 								</span>
 							</div>
 
-							{/* Aviso de error de stock */}
 							{hasStockError && (
 								<div className="mb-3 p-2.5 bg-red-50 border border-red-200 text-red-600 rounded-xl text-xs font-medium text-center">
-									⚠️ Tenés productos que superan el stock disponible. Por favor,
-									disminuí la cantidad en el carrito para continuar.
+									⚠️ Hay productos que superan el stock disponible. Ajustá las
+									cantidades para poder enviar tu pedido.
 								</div>
 							)}
 
