@@ -67,7 +67,13 @@ export const Menu = (): JSX.Element => {
 
 	const handleCheckout = (e: React.FormEvent) => {
 		e.preventDefault();
-		if (!business || items.length === 0 || !customerName.trim()) return;
+		if (
+			!business ||
+			items.length === 0 ||
+			!customerName.trim() ||
+			hasStockError
+		)
+			return;
 
 		const whatsappUrl = buildWhatsAppUrl(business, items, {
 			name: customerName,
@@ -75,7 +81,6 @@ export const Menu = (): JSX.Element => {
 			notes: customerNotes,
 		});
 
-		// Abrir WhatsApp en nueva pestaña
 		window.open(whatsappUrl, "_blank");
 		clearCart();
 		setIsCartOpen(false);
@@ -111,6 +116,13 @@ export const Menu = (): JSX.Element => {
 		: products;
 
 	const totalItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
+
+	const hasStockError = items.some(
+		(item) =>
+			item.product.stock !== null &&
+			item.product.stock !== undefined &&
+			item.quantity > (item.product.stock as number),
+	);
 
 	return (
 		<div className="min-h-screen bg-gray-50 pb-24">
@@ -321,7 +333,7 @@ export const Menu = (): JSX.Element => {
 										{isAtMaxStock && (
 											<span className="text-[10px] text-amber-600 font-medium">
 												Máximo stock disponible alcanzado ({item.product.stock}{" "}
-												un.)
+												unidades)
 											</span>
 										)}
 									</div>
@@ -395,10 +407,24 @@ export const Menu = (): JSX.Element => {
 									{getTotal().toFixed(2)}
 								</span>
 							</div>
+
+							{/* Aviso de error de stock */}
+							{hasStockError && (
+								<div className="mb-3 p-2.5 bg-red-50 border border-red-200 text-red-600 rounded-xl text-xs font-medium text-center">
+									⚠️ Tenés productos que superan el stock disponible. Por favor,
+									disminuí la cantidad en el carrito para continuar.
+								</div>
+							)}
+
 							<button
 								type="submit"
 								form="checkout-form"
-								className="w-full bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-md transition-colors"
+								disabled={hasStockError}
+								className={`w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-md transition-colors ${
+									hasStockError
+										? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
+										: "bg-emerald-600 hover:bg-emerald-700 text-white"
+								}`}
 							>
 								<MessageCircle size={20} />
 								Enviar pedido por WhatsApp
