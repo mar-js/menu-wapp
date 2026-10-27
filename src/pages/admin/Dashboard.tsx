@@ -7,12 +7,15 @@ import {
 	Package,
 	Plus,
 	QrCode,
+	ShoppingBag,
 	Store,
 	Trash2,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useCallback, useEffect, useState } from "react";
 import type { JSX } from "react/jsx-runtime";
+import { OrderList } from "../../components/admin/OrderList";
+import { StockControl } from "../../components/admin/StockControl";
 import { AVAILABLE_PAYMENT_OPTIONS } from "../../global/constants";
 import type { IBusiness, ICategory, IProduct } from "../../interfaces";
 import { supabase } from "../../lib/supabase";
@@ -28,7 +31,7 @@ export const Dashboard = (): JSX.Element => {
 
 	// Agregamos "payment-methods" a las pestañas activas posibles
 	const [activeTab, setActiveTab] = useState<
-		"products" | "categories" | "qr" | "payment-methods"
+		"products" | "categories" | "qr" | "payment-methods" | "orders"
 	>("products");
 
 	// Formularios
@@ -222,6 +225,15 @@ export const Dashboard = (): JSX.Element => {
 		}
 	};
 
+	// 1. Agregar el handler de actualización de stock dentro de Dashboard
+	const handleStockChange = (productId: string, newStock: number) => {
+		setProducts((prevProducts) =>
+			prevProducts.map((p) =>
+				p.id === productId ? { ...p, stock: newStock } : p,
+			),
+		);
+	};
+
 	useEffect(() => {
 		fetchAdminData();
 	}, [fetchAdminData]);
@@ -312,6 +324,17 @@ export const Dashboard = (): JSX.Element => {
 						}`}
 					>
 						<QrCode size={16} /> Código QR
+					</button>
+					<button
+						type="button"
+						onClick={() => setActiveTab("orders")}
+						className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${
+							activeTab === "orders"
+								? "bg-emerald-600 text-white"
+								: "bg-white text-gray-600 hover:bg-gray-50"
+						}`}
+					>
+						<ShoppingBag size={16} /> Pedidos
 					</button>
 				</div>
 
@@ -556,17 +579,17 @@ export const Dashboard = (): JSX.Element => {
 							{products.map((p) => (
 								<div
 									key={p.id}
-									className="bg-white p-4 rounded-xl border border-gray-200 flex items-center justify-between shadow-sm"
+									className="bg-white p-4 rounded-xl border border-gray-200 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-sm"
 								>
 									<div className="flex items-center gap-3">
 										{p.image_url ? (
 											<img
 												src={p.image_url}
 												alt={p.name}
-												className="w-14 h-14 object-cover rounded-lg border"
+												className="w-14 h-14 object-cover rounded-lg border border-gray-100"
 											/>
 										) : (
-											<div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400">
+											<div className="w-14 h-14 bg-gray-100 rounded-lg flex items-center justify-center text-gray-400 shrink-0">
 												<ImageIcon size={20} />
 											</div>
 										)}
@@ -574,31 +597,49 @@ export const Dashboard = (): JSX.Element => {
 											<h3 className="font-bold text-gray-800 text-sm">
 												{p.name}
 											</h3>
-											<p className="text-xs text-gray-500">{p.description}</p>
-											<span className="font-semibold text-emerald-700 text-sm mt-1 block">
+											<p className="text-xs text-gray-500 line-clamp-1">
+												{p.description}
+											</p>
+											<span className="font-semibold text-emerald-700 text-sm mt-0.5 block">
 												{formatPrice(p.price)}
 											</span>
 										</div>
 									</div>
-									<div className="flex items-center gap-2">
-										<button
-											type="button"
-											onClick={() => toggleProductAvailability(p)}
-											className="cursor-pointer p-2 rounded-lg text-xs bg-gray-100"
-										>
-											{p.is_available ? (
-												<Eye size={16} />
-											) : (
-												<EyeOff size={16} />
-											)}
-										</button>
-										<button
-											type="button"
-											onClick={() => handleDeleteProduct(p.id)}
-											className="cursor-pointer p-2 text-red-500 hover:bg-red-50 rounded-lg"
-										>
-											<Trash2 size={16} />
-										</button>
+
+									<div className="flex items-center justify-between w-full sm:w-auto gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+										{/* Controles de Stock integrados y sincronizados */}
+										<StockControl
+											productId={p.id}
+											currentStock={p.stock ?? 0}
+											onStockChange={handleStockChange}
+										/>
+
+										<div className="flex items-center gap-1 border-l border-gray-200 pl-2">
+											<button
+												type="button"
+												onClick={() => toggleProductAvailability(p)}
+												className="cursor-pointer p-2 rounded-lg text-xs bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors"
+												title={
+													p.is_available
+														? "Ocultar producto"
+														: "Mostrar producto"
+												}
+											>
+												{p.is_available ? (
+													<Eye size={16} />
+												) : (
+													<EyeOff size={16} />
+												)}
+											</button>
+											<button
+												type="button"
+												onClick={() => handleDeleteProduct(p.id)}
+												className="cursor-pointer p-2 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+												title="Eliminar producto"
+											>
+												<Trash2 size={16} />
+											</button>
+										</div>
 									</div>
 								</div>
 							))}
@@ -712,6 +753,15 @@ export const Dashboard = (): JSX.Element => {
 							{publicMenuUrl}
 						</p>
 					</div>
+				)}
+
+				{/* Pestaña: Pedidos/Ordenes */}
+				{activeTab === "orders" && business && (
+					<OrderList
+						businessId={business.id}
+						products={products}
+						onStockRestored={fetchAdminData}
+					/>
 				)}
 			</main>
 		</div>
