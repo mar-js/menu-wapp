@@ -21,6 +21,7 @@ export const Menu = (): JSX.Element => {
 
 	// Estados del formulario de cliente para el checkout de WhatsApp
 	const [customerName, setCustomerName] = useState("");
+	const [customerPhone, setCustomerPhone] = useState(""); // <-- NUEVO ESTADO
 	const [customerAddress, setCustomerAddress] = useState("");
 	const [customerNotes, setCustomerNotes] = useState("");
 	const [paymentMethod, setPaymentMethod] = useState(""); // <-- Nuevo estado
@@ -171,6 +172,7 @@ export const Menu = (): JSX.Element => {
 			!business ||
 			items.length === 0 ||
 			!customerName.trim() ||
+			!customerPhone.trim() ||
 			!customerAddress.trim() ||
 			!paymentMethod ||
 			hasStockError
@@ -178,12 +180,13 @@ export const Menu = (): JSX.Element => {
 			return;
 
 		try {
-			// 1. Guardar el pedido en la tabla "orders" de Supabase
+			// 1. Guardar el pedido en la tabla "orders" de Supabase con el teléfono real
 			const { error: orderError } = await supabase.from("orders").insert({
 				business_id: business.id,
 				customer_name: customerName.trim(),
+				customer_phone: customerPhone.trim(), // <-- Aquí va el teléfono separado
+				customer_notes: customerNotes.trim() ? customerNotes.trim() : null, // <-- NOTAS ADICIONALES
 				customer_address: customerAddress.trim(),
-				customer_phone: customerNotes.trim() ? customerNotes.trim() : null, // O tu campo de teléfono si lo agregas
 				payment_method: paymentMethod,
 				total: getTotal(),
 				items: items.map((item) => ({
@@ -216,7 +219,7 @@ export const Menu = (): JSX.Element => {
 				}
 			}
 
-			// 3. Generar URL de WhatsApp y abrir el chat
+			// 3. Generar URL de WhatsApp y abrir el chat (las notas van aquí si el cliente escribió algo)
 			const whatsappUrl = buildWhatsAppUrl(business, items, {
 				name: customerName,
 				address: customerAddress,
@@ -535,6 +538,24 @@ export const Menu = (): JSX.Element => {
 												value={customerName}
 												onChange={(e) => setCustomerName(e.target.value)}
 												placeholder="Ej. Juan Pérez"
+												className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+											/>
+										</div>
+										{/* NUEVO CAMPO DE TELÉFONO */}
+										<div>
+											<label
+												className="block text-xs font-medium text-gray-700 mb-1"
+												htmlFor="customerPhone"
+											>
+												Tu Teléfono / Celular *
+											</label>
+											<input
+												id="customerPhone"
+												type="tel"
+												required
+												value={customerPhone}
+												onChange={(e) => setCustomerPhone(e.target.value)}
+												placeholder="Ej. 3815555555"
 												className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
 											/>
 										</div>
