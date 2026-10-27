@@ -157,6 +157,12 @@ export const OrderList = ({
 											</span>
 										)}
 									</div>
+									{/* NOTAS DEL CLIENTE (Solo si existen) */}
+									{order.customer_notes && (
+										<div className="mt-2 text-xs bg-amber-50 text-amber-800 border border-amber-200 px-2.5 py-1 rounded-md font-medium inline-block">
+											📝 <strong>Nota:</strong> {order.customer_notes}
+										</div>
+									)}
 								</div>
 
 								{/* Badge de Estado */}
