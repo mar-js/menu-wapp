@@ -6,7 +6,7 @@ export const Home = (): JSX.Element => {
 	return (
 		<div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
 			{/* Header / Navbar */}
-			<header className="bg-white/80 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30">
+			<header className="bg-white/85 backdrop-blur-md border-b border-slate-200 sticky top-0 z-30">
 				<div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
 					<div className="flex items-center gap-2">
 						<div className="w-9 h-9 bg-emerald-600 rounded-xl flex items-center justify-center text-white font-bold shadow-md shadow-emerald-600/20">
@@ -28,7 +28,7 @@ export const Home = (): JSX.Element => {
 							href="/admin/login"
 							className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold px-4 py-2 rounded-xl transition-all shadow-sm hover:shadow-md"
 						>
-							Crear Menú Gratis
+							Crear Catálogo Gratis
 						</Link>
 					</div>
 				</div>
@@ -38,20 +38,20 @@ export const Home = (): JSX.Element => {
 			<section className="max-w-5xl mx-auto px-4 pt-16 pb-20 text-center">
 				<div className="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-200/60 text-emerald-700 px-3 py-1.5 rounded-full text-xs font-semibold mb-6">
 					<span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
-					Pensado para gastronomía y comercios de Argentina
+					Pensado para emprendedores y comercios de Argentina
 				</div>
 
 				<h1 className="text-4xl sm:text-6xl font-black text-slate-900 tracking-tight leading-[1.15] mb-6">
-					Tu menú digital con QR y <br className="hidden sm:inline" />
+					Tu catálogo digital con QR y <br className="hidden sm:inline" />
 					<span className="text-emerald-600">
 						pedidos directo a tu WhatsApp
 					</span>
 				</h1>
 
 				<p className="text-base sm:text-lg text-slate-600 max-w-2xl mx-auto mb-8 leading-relaxed">
-					Olvidate de los PDFs pesados que nadie lee y de pagar comisiones
-					altísimas a las apps de envíos. Creá tu carta interactiva en 5 minutos
-					y recibí pedidos organizados al instante.
+					Ya sea que vendas comidas, indumentaria, alimentos, manejes un almacén
+					o ofrezcas servicios. Digitaliza tus productos sin comisiones y recibe
+					pedidos organizados al instante.
 				</p>
 
 				<div className="flex flex-col sm:flex-row items-center justify-center gap-3">
@@ -87,7 +87,7 @@ export const Home = (): JSX.Element => {
 							</h3>
 							<p className="text-sm text-slate-600 leading-relaxed">
 								El dinero de tus ventas va directamente a tu cuenta o caja. No
-								nos quedamos con ningún porcentaje de tus pedidos.
+								nos quedamos con ningún porcentaje de tus transacciones.
 							</p>
 						</div>
 
@@ -96,11 +96,11 @@ export const Home = (): JSX.Element => {
 								<Zap size={24} />
 							</div>
 							<h3 className="font-bold text-lg text-slate-900 mb-2">
-								Sin descargas para el cliente
+								Sin descargas para tus clientes
 							</h3>
 							<p className="text-sm text-slate-600 leading-relaxed">
-								Tus clientes escanean el QR desde la mesa o abren el link desde
-								Instagram y eligen al instante sin instalar nada.
+								Tus clientes escanean el QR en tu local o abren tu link desde
+								Instagram y navegan por tus productos al instante.
 							</p>
 						</div>
 
@@ -109,11 +109,11 @@ export const Home = (): JSX.Element => {
 								<Smartphone size={24} />
 							</div>
 							<h3 className="font-bold text-lg text-slate-900 mb-2">
-								Pedidos limpios y estructurados
+								Pedidos claros y estructurados
 							</h3>
 							<p className="text-sm text-slate-600 leading-relaxed">
-								Recibí por WhatsApp el detalle exacto: productos, cantidades,
-								aclaraciones, dirección de envío y total calculado.
+								Recibí por WhatsApp el detalle exacto: artículos, cantidades,
+								dirección, notas y el total calculado automáticamente.
 							</p>
 						</div>
 					</div>
@@ -127,7 +127,7 @@ export const Home = (): JSX.Element => {
 						¿Cómo funciona MenuWapp?
 					</h2>
 					<p className="text-slate-600 text-sm mt-2">
-						En solo 3 pasos tenés tu local vendiendo online
+						En solo 3 pasos tu emprendimiento empieza a vender online
 					</p>
 				</div>
 
@@ -136,9 +136,11 @@ export const Home = (): JSX.Element => {
 						<div className="w-10 h-10 bg-slate-900 text-white rounded-full flex items-center justify-center font-bold mx-auto mb-4">
 							1
 						</div>
-						<h4 className="font-bold text-slate-900 mb-1">Cargá tu menú</h4>
+						<h4 className="font-bold text-slate-900 mb-1">
+							Cargá tus productos
+						</h4>
 						<p className="text-xs text-slate-600">
-							Subí tus productos, categorías y precios desde tu celular o
+							Subí tus artículos, categorías, precios y fotos desde tu celular o
 							computadora.
 						</p>
 					</div>
@@ -148,11 +150,11 @@ export const Home = (): JSX.Element => {
 							2
 						</div>
 						<h4 className="font-bold text-slate-900 mb-1">
-							Obtené tu QR y Link
+							Compartí tu QR o Link
 						</h4>
 						<p className="text-xs text-slate-600">
-							Imprimí el QR para las mesas o compartí tu link exclusivo en el
-							perfil de Instagram.
+							Imprimí el código QR para tu local o compartí tu enlace web en el
+							perfil de tus redes sociales.
 						</p>
 					</div>
 
@@ -162,8 +164,8 @@ export const Home = (): JSX.Element => {
 						</div>
 						<h4 className="font-bold text-slate-900 mb-1">Recibí pedidos</h4>
 						<p className="text-xs text-slate-600">
-							Tus clientes arman el carrito y te llega la orden lista para
-							preparar por WhatsApp.
+							Tus clientes arman el carrito y te llega el pedido completo listo
+							para coordinar por WhatsApp.
 						</p>
 					</div>
 				</div>
@@ -173,17 +175,17 @@ export const Home = (): JSX.Element => {
 			<section className="max-w-4xl mx-auto px-4 pb-20">
 				<div className="bg-emerald-600 rounded-3xl p-8 sm:p-12 text-center text-white shadow-xl shadow-emerald-600/20 relative overflow-hidden">
 					<h2 className="text-2xl sm:text-4xl font-black mb-4">
-						Empezá a modernizar tu local hoy mismo
+						Empezá a potenciar tu emprendimiento hoy mismo
 					</h2>
 					<p className="text-emerald-100 text-sm sm:text-base max-w-lg mx-auto mb-8">
-						Creá tu cuenta gratis, cargá tu menú de prueba en 5 minutos y
-						comproba lo fácil que es recibir pedidos.
+						Creá tu cuenta gratis, armá tu catálogo en 5 minutos y comprobá lo
+						fácil que es recibir pedidos directos.
 					</p>
 					<Link
 						href="/admin/login"
 						className="bg-white text-emerald-800 hover:bg-emerald-50 font-extrabold text-sm px-8 py-3.5 rounded-2xl shadow-md transition-all inline-block"
 					>
-						Crear mi menú en MenuWapp
+						Crear mi catálogo en MenuWapp
 					</Link>
 				</div>
 			</section>
@@ -192,7 +194,7 @@ export const Home = (): JSX.Element => {
 			<footer className="border-t border-slate-200 bg-white py-8 text-center text-xs text-slate-500">
 				<p>
 					© {new Date().getFullYear()} MenuWapp. Hecho para potenciar los
-					comercios locales.
+					negocios y emprendedores locales.
 				</p>
 			</footer>
 		</div>
