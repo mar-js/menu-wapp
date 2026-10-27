@@ -3,17 +3,21 @@ import type { IBusiness, ICartItem } from "../interfaces";
 export const buildWhatsAppUrl = (
 	business: IBusiness,
 	cart: ICartItem[],
-	customerDetails: { name: string; address?: string; notes?: string },
+	customerDetails: {
+		name: string;
+		address: string;
+		notes?: string;
+		paymentMethod: string; // <-- Campo para el método de pago
+	},
 ): string => {
-	// Usamos emojis universales muy seguros o formato limpio de texto
 	let message = `*NUEVO PEDIDO: ${business.name.toUpperCase()}*\n`;
 	message += `==============================\n\n`;
 
 	message += `*Cliente:* ${customerDetails.name}\n`;
+	message += `*Dirección:* ${customerDetails.address}\n`;
 
-	if (customerDetails.address && customerDetails.address.trim() !== "") {
-		message += `*Dirección:* ${customerDetails.address}\n`;
-	}
+	// Incluimos el método de pago seleccionado
+	message += `*Método de pago:* ${customerDetails.paymentMethod}\n`;
 
 	if (customerDetails.notes && customerDetails.notes.trim() !== "") {
 		message += `*Notas:* ${customerDetails.notes}\n`;
@@ -42,7 +46,6 @@ export const buildWhatsAppUrl = (
 	message += `==============================\n`;
 	message += `_Enviado a través de MenuWapp_`;
 
-	// Limpiar número de teléfono (quitar espacios, guiones o el signo +)
 	const cleanPhone = business.whatsapp_number.replace(/\D/g, "");
 	const encodedText = encodeURIComponent(message);
 
