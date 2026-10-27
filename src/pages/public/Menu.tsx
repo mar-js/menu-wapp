@@ -72,9 +72,61 @@ export const Menu = (): JSX.Element => {
 		}
 	}, [slug]);
 
+	// 1. LLAMAMOS AL USEEFFECT AQUÍ ARRIBA (Antes de cualquier return condicional)
 	useEffect(() => {
 		fetchMenuData();
 	}, [fetchMenuData]);
+
+	// 2. SEO Dinámico (También al nivel superior, dependiendo de business)
+	useEffect(() => {
+		if (business) {
+			document.title = `${business.name} | Catálogo y Pedidos - MenuWapp`;
+
+			let metaDesc = document.querySelector('meta[name="description"]');
+			if (!metaDesc) {
+				metaDesc = document.createElement("meta");
+				metaDesc.setAttribute("name", "description");
+				document.head.appendChild(metaDesc);
+			}
+			metaDesc.setAttribute(
+				"content",
+				`Mirá el catálogo de ${business.name}, consultá disponibilidad y hacé tu pedido o consulta directamente por WhatsApp.`,
+			);
+
+			const ogTitle = document.querySelector('meta[property="og:title"]');
+			if (ogTitle)
+				ogTitle.setAttribute("content", `${business.name} - Catálogo Online`);
+
+			const ogDesc = document.querySelector('meta[property="og:description"]');
+			if (ogDesc)
+				ogDesc.setAttribute(
+					"content",
+					`Conectate con ${business.name} y chateá directo por WhatsApp para coordinar tu pedido.`,
+				);
+		}
+	}, [business]);
+
+	// AHORA SÍ: Los returns condicionales van abajo de todos los hooks
+	if (loading) {
+		return (
+			<div className="min-h-screen flex items-center justify-center bg-gray-50">
+				<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
+			</div>
+		);
+	}
+
+	if (!business) {
+		return (
+			<div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 text-center">
+				<h1 className="text-2xl font-bold text-gray-800 mb-2">
+					Local no encontrado
+				</h1>
+				<p className="text-gray-600">
+					El menú que buscás no existe o fue deshabilitado.
+				</p>
+			</div>
+		);
+	}
 
 	if (loading) {
 		return (
