@@ -16,6 +16,7 @@ import type { JSX } from "react/jsx-runtime";
 import { AVAILABLE_PAYMENT_OPTIONS } from "../../global/constants";
 import type { IBusiness, ICategory, IProduct } from "../../interfaces";
 import { supabase } from "../../lib/supabase";
+import { formatPrice } from "../../utils/formatPrice";
 import { uploadProductImage } from "../../utils/storage";
 
 export const Dashboard = (): JSX.Element => {
@@ -575,7 +576,7 @@ export const Dashboard = (): JSX.Element => {
 											</h3>
 											<p className="text-xs text-gray-500">{p.description}</p>
 											<span className="font-semibold text-emerald-700 text-sm mt-1 block">
-												${p.price.toFixed(2)}
+												{formatPrice(p.price)}
 											</span>
 										</div>
 									</div>

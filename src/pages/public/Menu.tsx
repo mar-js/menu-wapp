@@ -5,6 +5,7 @@ import { useRoute } from "wouter";
 import type { IBusiness, ICategory, IProduct } from "../../interfaces";
 import { supabase } from "../../lib/supabase";
 import { useCartStore } from "../../store/useCartStore";
+import { formatPrice } from "../../utils/formatPrice";
 import { buildWhatsAppUrl } from "../../utils/whatsapp";
 
 export const Menu = (): JSX.Element => {
@@ -282,8 +283,7 @@ export const Menu = (): JSX.Element => {
 										{product.description}
 									</p>
 									<p className="font-bold text-emerald-700 text-sm mt-1">
-										{business.currency_symbol}
-										{product.price.toFixed(2)}
+										{formatPrice(product.price)}
 									</p>
 								</div>
 
@@ -339,10 +339,7 @@ export const Menu = (): JSX.Element => {
 									: "Ver mi pedido"}
 							</span>
 						</div>
-						<span>
-							{business.currency_symbol}
-							{getTotal().toFixed(2)}
-						</span>
+						<span>{formatPrice(getTotal())}</span>
 					</button>
 				</div>
 			)}
@@ -405,8 +402,7 @@ export const Menu = (): JSX.Element => {
 														{item.product.name}
 													</span>
 													<span className="font-semibold text-sm text-gray-800">
-														{business.currency_symbol}
-														{(item.product.price * item.quantity).toFixed(2)}
+														{formatPrice(item.product.price * item.quantity)}
 													</span>
 												</div>
 
@@ -576,8 +572,7 @@ export const Menu = (): JSX.Element => {
 								<div className="flex justify-between mb-3 font-bold text-gray-900">
 									<span>Total:</span>
 									<span className="text-emerald-700">
-										{business.currency_symbol}
-										{getTotal().toFixed(2)}
+										{formatPrice(getTotal())}
 									</span>
 								</div>
 

@@ -1,4 +1,5 @@
 import type { IBusiness, ICartItem } from "../interfaces";
+import { formatPrice } from "./formatPrice";
 
 export const buildWhatsAppUrl = (
 	business: IBusiness,
@@ -34,7 +35,7 @@ export const buildWhatsAppUrl = (
 		total += subtotal;
 
 		message += `• *${item.quantity}x* ${item.product.name}\n`;
-		message += `   Subtotal: ${business.currency_symbol}${subtotal.toFixed(2)}\n`;
+		message += `   Subtotal: ${formatPrice(subtotal)}\n`;
 
 		if (item.notes && item.notes.trim() !== "") {
 			message += `   _Nota: ${item.notes}_\n`;
@@ -42,7 +43,7 @@ export const buildWhatsAppUrl = (
 	});
 
 	message += `==============================\n`;
-	message += `*TOTAL A PAGAR: ${business.currency_symbol}${total.toFixed(2)}*\n`;
+	message += `*TOTAL A PAGAR: ${formatPrice(total)}*\n`;
 	message += `==============================\n`;
 	message += `_Enviado a través de MenuWapp_`;
 
