@@ -191,7 +191,7 @@ export const Home = (): JSX.Element => {
 			</section>
 
 			{/* Footer Simple */}
-			<footer className="border-t border-slate-200 bg-white p-8 text-center text-xs text-slate-500">
+			<footer className="border-t border-slate-200 bg-white p-8 text-center text-xs text-slate-500 space-y-2">
 				<p>
 					© {new Date().getFullYear()} MenuWapp. Hecho para potenciar los
 					negocios y emprendedores locales.
@@ -203,8 +203,14 @@ export const Home = (): JSX.Element => {
 				</p>
 				<p>
 					No procesamos pagos ni intervenimos en las operaciones comerciales
-					entre comerciantes y clientes. Consulta nuestros Términos y
-					Condiciones.
+					entre comerciantes y clientes. Consulta nuestros{" "}
+					<Link
+						href="/terms"
+						className="text-emerald-600 font-semibold hover:underline"
+					>
+						Términos y Condiciones
+					</Link>
+					.
 				</p>
 			</footer>
 		</div>
