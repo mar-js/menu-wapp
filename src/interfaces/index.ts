@@ -12,7 +12,8 @@ export interface IOrder {
 	id: string;
 	business_id: string;
 	customer_name: string;
-	customer_phone?: string;
+	customer_phone: string;
+	customer_notes?: string; // <-- Agregar a la interfaz
 	customer_address: string;
 	payment_method: string;
 	total: number;
