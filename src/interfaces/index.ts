@@ -1,5 +1,10 @@
 import type { JSX } from "react/jsx-runtime";
 
+export interface IBusinessState {
+	products: IProduct[];
+	updateStock: (productId: string, newStock: number) => Promise<void>;
+}
+
 export interface IProtectedRoute {
 	component: () => JSX.Element;
 }
