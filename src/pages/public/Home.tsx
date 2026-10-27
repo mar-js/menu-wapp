@@ -191,10 +191,20 @@ export const Home = (): JSX.Element => {
 			</section>
 
 			{/* Footer Simple */}
-			<footer className="border-t border-slate-200 bg-white py-8 text-center text-xs text-slate-500">
+			<footer className="border-t border-slate-200 bg-white p-8 text-center text-xs text-slate-500">
 				<p>
 					© {new Date().getFullYear()} MenuWapp. Hecho para potenciar los
 					negocios y emprendedores locales.
+				</p>
+				<p>
+					Todos los derechos reservados. MenuWapp es una herramienta de
+					infraestructura digital sin comisiones orientada exclusivamente al
+					territorio argentino.
+				</p>
+				<p>
+					No procesamos pagos ni intervenimos en las operaciones comerciales
+					entre comerciantes y clientes. Consulta nuestros Términos y
+					Condiciones.
 				</p>
 			</footer>
 		</div>
