@@ -165,7 +165,7 @@ export const Menu = (): JSX.Element => {
 		return item.quantity > realProduct.stock;
 	});
 
-	const handleCheckout = (e: React.FormEvent) => {
+	const handleCheckout = async (e: React.FormEvent) => {
 		e.preventDefault();
 		if (
 			!business ||
@@ -177,16 +177,59 @@ export const Menu = (): JSX.Element => {
 		)
 			return;
 
-		const whatsappUrl = buildWhatsAppUrl(business, items, {
-			name: customerName,
-			address: customerAddress,
-			notes: customerNotes,
-			paymentMethod: paymentMethod, // <-- Lo pasamos aquí
-		});
+		try {
+			// 1. Guardar el pedido en la tabla "orders" de Supabase
+			const { error: orderError } = await supabase.from("orders").insert({
+				business_id: business.id,
+				customer_name: customerName.trim(),
+				customer_address: customerAddress.trim(),
+				customer_phone: customerNotes.trim() ? customerNotes.trim() : null, // O tu campo de teléfono si lo agregas
+				payment_method: paymentMethod,
+				total: getTotal(),
+				items: items.map((item) => ({
+					product_id: item.product.id,
+					name: item.product.name,
+					price: item.product.price,
+					quantity: item.quantity,
+					notes: item.notes || "",
+				})),
+				status: "pending",
+			});
 
-		window.open(whatsappUrl, "_blank");
-		clearCart();
-		setIsCartOpen(false);
+			if (orderError) {
+				console.error("Error al guardar el pedido en Supabase:", orderError);
+			}
+
+			// 2. Descontar el stock de cada producto comprado en la tabla "products"
+			for (const item of items) {
+				const currentProduct = products.find((p) => p.id === item.product.id);
+				if (
+					currentProduct &&
+					currentProduct.stock !== null &&
+					currentProduct.stock !== undefined
+				) {
+					const newStock = Math.max(0, currentProduct.stock - item.quantity);
+					await supabase
+						.from("products")
+						.update({ stock: newStock })
+						.eq("id", item.product.id);
+				}
+			}
+
+			// 3. Generar URL de WhatsApp y abrir el chat
+			const whatsappUrl = buildWhatsAppUrl(business, items, {
+				name: customerName,
+				address: customerAddress,
+				notes: customerNotes,
+				paymentMethod: paymentMethod,
+			});
+
+			window.open(whatsappUrl, "_blank");
+			clearCart();
+			setIsCartOpen(false);
+		} catch (err) {
+			console.error("Error inesperado procesando el checkout:", err);
+		}
 	};
 
 	return (
