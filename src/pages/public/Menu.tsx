@@ -362,187 +362,213 @@ export const Menu = (): JSX.Element => {
 							</button>
 						</div>
 
-						{/* Items del Carrito */}
+						{/* Items del Carrito o Estado Vacío */}
 						<div className="p-4 overflow-y-auto flex-1 space-y-3">
-							{items.map((item) => {
-								const currentProduct =
-									products.find((p) => p.id === item.product.id) ||
-									item.product;
-
-								const maxStock = currentProduct.stock;
-								const hasStockLimit =
-									maxStock !== null && maxStock !== undefined;
-								const isAtMaxStock =
-									hasStockLimit && item.quantity >= (maxStock as number);
-								const isOverStock =
-									hasStockLimit && item.quantity > (maxStock as number);
-
-								return (
-									<div
-										key={item.product.id}
-										className={`flex flex-col gap-1 border-b pb-3 ${
-											isOverStock
-												? "border-red-200 bg-red-50 p-2 rounded-xl"
-												: "border-gray-100"
-										}`}
+							{items.length === 0 ? (
+								<div className="text-center py-12 text-gray-500 space-y-3">
+									<p className="text-sm font-medium">Tu carrito está vacío.</p>
+									<button
+										type="button"
+										onClick={() => setIsCartOpen(false)}
+										className="bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold px-4 py-2 rounded-xl transition-colors"
 									>
-										<div className="flex items-center justify-between">
-											<span className="font-medium text-sm text-gray-900">
-												{item.product.name}
-											</span>
-											<span className="font-semibold text-sm text-gray-800">
-												{business.currency_symbol}
-												{(item.product.price * item.quantity).toFixed(2)}
-											</span>
-										</div>
+										Volver al catálogo
+									</button>
+								</div>
+							) : (
+								<>
+									{items.map((item) => {
+										const currentProduct =
+											products.find((p) => p.id === item.product.id) ||
+											item.product;
 
-										<div className="flex items-center justify-between mt-1">
-											<div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
-												<button
-													type="button"
-													onClick={() =>
-														updateQuantity(item.product.id, item.quantity - 1)
-													}
-													className="cursor-pointer p-1 text-gray-600 hover:text-black"
-												>
-													<Minus size={14} />
-												</button>
-												<span className="text-xs font-bold px-2">
-													{item.quantity}
-												</span>
-												<button
-													type="button"
-													onClick={() =>
-														updateQuantity(
-															item.product.id,
-															item.quantity + 1,
-															maxStock,
-														)
-													}
-													disabled={isAtMaxStock}
-													className={`cursor-pointer p-1 ${
-														isAtMaxStock
-															? "text-gray-300 cursor-not-allowed"
-															: "text-gray-600 hover:text-black"
-													}`}
-												>
-													<Plus size={14} />
-												</button>
-											</div>
+										const maxStock = currentProduct.stock;
+										const hasStockLimit =
+											maxStock !== null && maxStock !== undefined;
+										const isAtMaxStock =
+											hasStockLimit && item.quantity >= (maxStock as number);
+										const isOverStock =
+											hasStockLimit && item.quantity > (maxStock as number);
 
-											<button
-												type="button"
-												onClick={() => removeItem(item.product.id)}
-												className="cursor-pointer text-red-500 hover:text-red-700 p-1"
+										return (
+											<div
+												key={item.product.id}
+												className={`flex flex-col gap-1 border-b pb-3 ${
+													isOverStock
+														? "border-red-200 bg-red-50 p-2 rounded-xl"
+														: "border-gray-100"
+												}`}
 											>
-												<Trash2 size={16} />
-											</button>
+												<div className="flex items-center justify-between">
+													<span className="font-medium text-sm text-gray-900">
+														{item.product.name}
+													</span>
+													<span className="font-semibold text-sm text-gray-800">
+														{business.currency_symbol}
+														{(item.product.price * item.quantity).toFixed(2)}
+													</span>
+												</div>
+
+												<div className="flex items-center justify-between mt-1">
+													<div className="flex items-center gap-2 bg-gray-100 rounded-lg p-1">
+														<button
+															type="button"
+															onClick={() =>
+																updateQuantity(
+																	item.product.id,
+																	item.quantity - 1,
+																)
+															}
+															className="cursor-pointer p-1 text-gray-600 hover:text-black"
+														>
+															<Minus size={14} />
+														</button>
+														<span className="text-xs font-bold px-2">
+															{item.quantity}
+														</span>
+														<button
+															type="button"
+															onClick={() => {
+																updateQuantity(
+																	item.product.id,
+																	item.quantity + 1,
+																	maxStock,
+																);
+															}}
+															disabled={isAtMaxStock}
+															className={`cursor-pointer p-1 ${
+																isAtMaxStock
+																	? "text-gray-300 cursor-not-allowed"
+																	: "text-gray-600 hover:text-black"
+															}`}
+														>
+															<Plus size={14} />
+														</button>
+													</div>
+
+													<button
+														type="button"
+														onClick={() => {
+															removeItem(item.product.id);
+															// Si al borrar el ítem el carrito queda vacío, cerramos el modal automáticamente
+															if (items.length <= 1) {
+																setIsCartOpen(false);
+															}
+														}}
+														className="cursor-pointer text-red-500 hover:text-red-700 p-1"
+													>
+														<Trash2 size={16} />
+													</button>
+												</div>
+
+												{isOverStock ? (
+													<span className="text-[10px] text-red-600 font-bold mt-1">
+														⚠️ Supera el stock disponible (Máximo disponible:{" "}
+														{maxStock} un.)
+													</span>
+												) : isAtMaxStock ? (
+													<span className="text-[10px] text-amber-600 font-medium mt-1">
+														Llegaste al stock máximo disponible ({maxStock} un.)
+													</span>
+												) : null}
+											</div>
+										);
+									})}
+
+									{/* Formulario de Checkout (Solo se muestra si hay items) */}
+									<form
+										id="checkout-form"
+										onSubmit={handleCheckout}
+										className="mt-4 space-y-3 pt-2"
+									>
+										<div>
+											<label
+												className="block text-xs font-medium text-gray-700 mb-1"
+												htmlFor="customerName"
+											>
+												Tu Nombre *
+											</label>
+											<input
+												id="customerName"
+												type="text"
+												required
+												value={customerName}
+												onChange={(e) => setCustomerName(e.target.value)}
+												placeholder="Ej. Juan Pérez"
+												className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+											/>
 										</div>
-
-										{isOverStock ? (
-											<span className="text-[10px] text-red-600 font-bold mt-1">
-												⚠️ Supera el stock disponible (Máximo disponible:{" "}
-												{maxStock} un.)
-											</span>
-										) : isAtMaxStock ? (
-											<span className="text-[10px] text-amber-600 font-medium mt-1">
-												Llegaste al stock máximo disponible ({maxStock} un.)
-											</span>
-										) : null}
-									</div>
-								);
-							})}
-
-							{/* Formulario de Checkout */}
-							<form
-								id="checkout-form"
-								onSubmit={handleCheckout}
-								className="mt-4 space-y-3 pt-2"
-							>
-								<div>
-									<label
-										className="block text-xs font-medium text-gray-700 mb-1"
-										htmlFor="customerName"
-									>
-										Tu Nombre *
-									</label>
-									<input
-										id="customerName"
-										type="text"
-										required
-										value={customerName}
-										onChange={(e) => setCustomerName(e.target.value)}
-										placeholder="Ej. Juan Pérez"
-										className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-									/>
-								</div>
-								<div>
-									<label
-										className="block text-xs font-medium text-gray-700 mb-1"
-										htmlFor="customerAddress"
-									>
-										Dirección de Entrega *
-									</label>
-									<input
-										id="customerAddress"
-										type="text"
-										required
-										value={customerAddress}
-										onChange={(e) => setCustomerAddress(e.target.value)}
-										placeholder="Ej. Av. San Martín 123"
-										className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-									/>
-								</div>
-								<div>
-									<label
-										className="block text-xs font-medium text-gray-700 mb-1"
-										htmlFor="customerNotes"
-									>
-										Notas para el local (Opcional)
-									</label>
-									<input
-										id="customerNotes"
-										type="text"
-										value={customerNotes}
-										onChange={(e) => setCustomerNotes(e.target.value)}
-										placeholder="Ej. Sin cebolla, por favor"
-										className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
-									/>
-								</div>
-							</form>
-						</div>
-
-						{/* Footer Modal / Botón Enviar WhatsApp */}
-						<div className="p-4 border-t border-gray-100 bg-gray-50">
-							<div className="flex justify-between mb-3 font-bold text-gray-900">
-								<span>Total:</span>
-								<span className="text-emerald-700">
-									{business.currency_symbol}
-									{getTotal().toFixed(2)}
-								</span>
-							</div>
-
-							{hasStockError && (
-								<div className="mb-3 p-2.5 bg-red-50 border border-red-200 text-red-600 rounded-xl text-xs font-medium text-center">
-									⚠️ Hay productos que superan el stock disponible. Ajustá las
-									cantidades para poder enviar tu pedido.
-								</div>
+										<div>
+											<label
+												className="block text-xs font-medium text-gray-700 mb-1"
+												htmlFor="customerAddress"
+											>
+												Dirección de Entrega *
+											</label>
+											<input
+												id="customerAddress"
+												type="text"
+												required
+												value={customerAddress}
+												onChange={(e) => setCustomerAddress(e.target.value)}
+												placeholder="Ej. Av. San Martín 123"
+												className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+											/>
+										</div>
+										<div>
+											<label
+												className="block text-xs font-medium text-gray-700 mb-1"
+												htmlFor="customerNotes"
+											>
+												Notas para el local (Opcional)
+											</label>
+											<input
+												id="customerNotes"
+												type="text"
+												value={customerNotes}
+												onChange={(e) => setCustomerNotes(e.target.value)}
+												placeholder="Ej. Sin cebolla, por favor"
+												className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
+											/>
+										</div>
+									</form>
+								</>
 							)}
-
-							<button
-								type="submit"
-								form="checkout-form"
-								disabled={hasStockError}
-								className={`cursor-pointer w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-md transition-colors ${
-									hasStockError
-										? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
-										: "bg-emerald-600 hover:bg-emerald-700 text-white"
-								}`}
-							>
-								<MessageCircle size={20} />
-								Enviar pedido por WhatsApp
-							</button>
 						</div>
+
+						{/* Footer Modal / Botón Enviar WhatsApp (Solo visible si hay items) */}
+						{items.length > 0 && (
+							<div className="p-4 border-t border-gray-100 bg-gray-50">
+								<div className="flex justify-between mb-3 font-bold text-gray-900">
+									<span>Total:</span>
+									<span className="text-emerald-700">
+										{business.currency_symbol}
+										{getTotal().toFixed(2)}
+									</span>
+								</div>
+
+								{hasStockError && (
+									<div className="mb-3 p-2.5 bg-red-50 border border-red-200 text-red-600 rounded-xl text-xs font-medium text-center">
+										⚠️ Hay productos que superan el stock disponible. Ajustá las
+										cantidades para poder enviar tu pedido.
+									</div>
+								)}
+
+								<button
+									type="submit"
+									form="checkout-form"
+									disabled={hasStockError}
+									className={`cursor-pointer w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-md transition-colors ${
+										hasStockError
+											? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
+											: "bg-emerald-600 hover:bg-emerald-700 text-white"
+									}`}
+								>
+									<MessageCircle size={20} />
+									Enviar pedido por WhatsApp
+								</button>
+							</div>
+						)}
 					</div>
 				</div>
 			)}
