@@ -2,7 +2,7 @@ import { create } from "zustand";
 import type { IBusinessState } from "../interfaces";
 import { supabase } from "../lib/supabase";
 
-export const useBusinessStore = create<IBusinessState>((set, get) => ({
+export const useBusinessStore = create<IBusinessState>((set) => ({
 	products: [],
 	// En tu store principal donde cargas los productos de Supabase:
 	updateStock: async (productId: string, newStock: number) => {
