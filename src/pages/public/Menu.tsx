@@ -1,4 +1,4 @@
-import { MessageCircle, Minus, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, MessageCircle, Minus, Plus, Trash2 } from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import type { JSX } from "react/jsx-runtime";
 import { useRoute } from "wouter";
@@ -13,9 +13,10 @@ export const Menu = (): JSX.Element => {
 	const [business, setBusiness] = useState<IBusiness | null>(null);
 	const [categories, setCategories] = useState<ICategory[]>([]);
 	const [products, setProducts] = useState<IProduct[]>([]);
-	const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+	const [selectedCategory, setSelectedCategory] = useState<string | null>(null); // null = "Todos"
 	const [loading, setLoading] = useState(true);
 	const [isCartOpen, setIsCartOpen] = useState(false);
+	const [isOwner, setIsOwner] = useState(false);
 
 	// Estados del formulario de cliente para el checkout de WhatsApp
 	const [customerName, setCustomerName] = useState("");
@@ -38,6 +39,14 @@ export const Menu = (): JSX.Element => {
 			if (bizError || !bizData) throw new Error("Local no encontrado");
 			setBusiness(bizData);
 
+			// Verificar si el usuario actual logueado es el dueño del negocio
+			const {
+				data: { user },
+			} = await supabase.auth.getUser();
+			if (user && bizData.owner_id === user.id) {
+				setIsOwner(true);
+			}
+
 			// 2. Obtener categorías
 			const { data: catData } = await supabase
 				.from("categories")
@@ -46,9 +55,7 @@ export const Menu = (): JSX.Element => {
 				.order("sort_order", { ascending: true });
 
 			setCategories(catData || []);
-			if (catData && catData.length > 0) {
-				setSelectedCategory(catData[0].id);
-			}
+			// NOTA: Dejamos selectedCategory en null por defecto para mostrar "Todos" los productos inicialmente
 
 			// 3. Obtener productos disponibles
 			const { data: prodData } = await supabase
@@ -131,6 +138,16 @@ export const Menu = (): JSX.Element => {
 			{/* Header del Negocio */}
 			<header className="bg-white shadow-sm sticky top-0 z-20">
 				<div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
+					{/* Botón para volver al Admin (Solo visible para el dueño) */}
+					{isOwner && (
+						<a
+							href="/admin"
+							className="bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded-xl transition-colors flex items-center gap-1 text-xs font-semibold"
+							title="Volver al Panel de Administración"
+						>
+							<ArrowLeft size={16} /> Admin
+						</a>
+					)}
 					<div>
 						<h1 className="text-xl font-bold text-gray-900">{business.name}</h1>
 						<p className="text-xs text-emerald-600 font-medium flex items-center gap-1">
@@ -138,13 +155,24 @@ export const Menu = (): JSX.Element => {
 							Abierto para pedidos
 						</p>
 					</div>
-					<div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 font-bold">
+					<div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 font-bold shrink-0">
 						{business.name.charAt(0)}
 					</div>
 				</div>
 
-				{/* Categorías */}
+				{/* Categorías (Incluye opción "Todos") */}
 				<div className="flex overflow-x-auto px-4 gap-2 border-t border-gray-100 py-2 scrollbar-none">
+					<button
+						type="button"
+						onClick={() => setSelectedCategory(null)}
+						className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+							selectedCategory === null
+								? "bg-emerald-600 text-white shadow-sm"
+								: "bg-gray-100 text-gray-600 hover:bg-gray-200"
+						}`}
+					>
+						Todos
+					</button>
 					{categories.map((cat) => (
 						<button
 							type="button"
@@ -166,7 +194,7 @@ export const Menu = (): JSX.Element => {
 			<main className="max-w-md mx-auto px-4 pt-4 space-y-3">
 				{filteredProducts.length === 0 ? (
 					<div className="text-center py-12 text-gray-500">
-						No hay productos disponibles en esta categoría.
+						No hay productos disponibles.
 					</div>
 				) : (
 					filteredProducts.map((product) => {
