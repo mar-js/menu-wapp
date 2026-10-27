@@ -1,4 +1,5 @@
 import {
+	CreditCard,
 	Eye,
 	EyeOff,
 	Image as ImageIcon,
@@ -12,6 +13,7 @@ import {
 import { QRCodeSVG } from "qrcode.react";
 import { useCallback, useEffect, useState } from "react";
 import type { JSX } from "react/jsx-runtime";
+import { AVAILABLE_PAYMENT_OPTIONS } from "../../global/constants";
 import type { IBusiness, ICategory, IProduct } from "../../interfaces";
 import { supabase } from "../../lib/supabase";
 import { uploadProductImage } from "../../utils/storage";
@@ -22,9 +24,11 @@ export const Dashboard = (): JSX.Element => {
 	const [products, setProducts] = useState<IProduct[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [uploadingImage, setUploadingImage] = useState<boolean>(false);
-	const [activeTab, setActiveTab] = useState<"products" | "categories" | "qr">(
-		"products",
-	);
+
+	// Agregamos "payment-methods" a las pestañas activas posibles
+	const [activeTab, setActiveTab] = useState<
+		"products" | "categories" | "qr" | "payment-methods"
+	>("products");
 
 	// Formularios
 	const [newCategoryName, setNewCategoryName] = useState<string>("");
@@ -110,7 +114,6 @@ export const Dashboard = (): JSX.Element => {
 			setUploadingImage(true);
 			let imageUrl: string | null = null;
 
-			// Si hay una foto seleccionada, la subimos a Supabase Storage
 			if (imageFile) {
 				imageUrl = await uploadProductImage(imageFile);
 			}
@@ -176,15 +179,10 @@ export const Dashboard = (): JSX.Element => {
 				.eq("id", categoryId);
 
 			if (!error) {
-				// 1. Quitamos la categoría de la lista local
 				setCategories(categories.filter((c) => c.id !== categoryId));
-
-				// 2. Si el producto que se estaba creando tenía esta categoría seleccionada, reseteamos la selección
 				if (selectedCategory === categoryId) {
 					setSelectedCategory("");
 				}
-
-				// 3. Sincronizamos en los productos locales para que pasen a "Sin categoría"
 				setProducts(
 					products.map((p) =>
 						p.category_id === categoryId ? { ...p, category_id: null } : p,
@@ -195,6 +193,31 @@ export const Dashboard = (): JSX.Element => {
 			}
 		} catch (error) {
 			console.error("Error al eliminar la categoría:", error);
+		}
+	};
+
+	// Función para alternar y guardar métodos de pago en Supabase
+	const togglePaymentMethod = async (method: string) => {
+		if (!business) return;
+
+		const currentMethods = business.payment_methods || [];
+		const updatedMethods = currentMethods.includes(method)
+			? currentMethods.filter((m: string) => m !== method)
+			: [...currentMethods, method];
+
+		try {
+			const { error } = await supabase
+				.from("businesses")
+				.update({ payment_methods: updatedMethods })
+				.eq("id", business.id);
+
+			if (!error) {
+				setBusiness({ ...business, payment_methods: updatedMethods });
+			} else {
+				console.error("Error al actualizar métodos de pago:", error);
+			}
+		} catch (error) {
+			console.error("Error al actualizar métodos de pago:", error);
 		}
 	};
 
@@ -243,11 +266,12 @@ export const Dashboard = (): JSX.Element => {
 			</header>
 
 			<main className="max-w-5xl mx-auto px-4 py-6">
-				<div className="flex gap-2 border-b border-gray-200 mb-6 pb-2">
+				{/* Pestañas de Navegación del Dashboard */}
+				<div className="flex gap-2 border-b border-gray-200 mb-6 pb-2 overflow-x-auto">
 					<button
 						type="button"
 						onClick={() => setActiveTab("products")}
-						className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+						className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${
 							activeTab === "products"
 								? "bg-emerald-600 text-white"
 								: "bg-white text-gray-600 hover:bg-gray-50"
@@ -258,7 +282,7 @@ export const Dashboard = (): JSX.Element => {
 					<button
 						type="button"
 						onClick={() => setActiveTab("categories")}
-						className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+						className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${
 							activeTab === "categories"
 								? "bg-emerald-600 text-white"
 								: "bg-white text-gray-600 hover:bg-gray-50"
@@ -268,8 +292,19 @@ export const Dashboard = (): JSX.Element => {
 					</button>
 					<button
 						type="button"
+						onClick={() => setActiveTab("payment-methods")}
+						className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${
+							activeTab === "payment-methods"
+								? "bg-emerald-600 text-white"
+								: "bg-white text-gray-600 hover:bg-gray-50"
+						}`}
+					>
+						<CreditCard size={16} /> Métodos de Pago
+					</button>
+					<button
+						type="button"
 						onClick={() => setActiveTab("qr")}
-						className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+						className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${
 							activeTab === "qr"
 								? "bg-emerald-600 text-white"
 								: "bg-white text-gray-600 hover:bg-gray-50"
@@ -279,6 +314,7 @@ export const Dashboard = (): JSX.Element => {
 					</button>
 				</div>
 
+				{/* Pestaña: Productos */}
 				{activeTab === "products" && (
 					<div className="grid grid-cols-1 md:grid-cols-3 gap-6">
 						<div className="bg-white p-5 rounded-xl border border-gray-200 shadow-sm h-fit">
@@ -384,7 +420,6 @@ export const Dashboard = (): JSX.Element => {
 										</option>
 									</select>
 
-									{/* Input rápido desplegable para crear categoría al vuelo */}
 									{isCreatingCategory && (
 										<div className="mt-2 p-3 bg-emerald-50 border border-emerald-200 rounded-lg space-y-2">
 											<p className="text-xs font-bold text-emerald-900">
@@ -415,7 +450,7 @@ export const Dashboard = (): JSX.Element => {
 
 															if (!error && data) {
 																setCategories([...categories, data]);
-																setSelectedCategory(data.id); // La selecciona automáticamente para el producto actual
+																setSelectedCategory(data.id);
 																setQuickCategoryName("");
 																setIsCreatingCategory(false);
 															}
@@ -453,8 +488,6 @@ export const Dashboard = (): JSX.Element => {
 									</label>
 									<div className="flex items-center gap-2 border border-gray-300 p-2 rounded-lg bg-gray-50">
 										<ImageIcon size={18} className="text-gray-400 shrink-0" />
-
-										{/* Input de archivo oculto */}
 										<input
 											type="file"
 											accept="image/*"
@@ -464,11 +497,9 @@ export const Dashboard = (): JSX.Element => {
 												setImageFile(e.target.files?.[0] || null)
 											}
 										/>
-
-										{/* Label personalizado que actúa como botón */}
 										<label
 											htmlFor="productImage"
-											className="flex-1 text-xs text-gray-600 truncate cursor-cursor-pointer bg-white border border-gray-200 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors flex items-center justify-between"
+											className="flex-1 text-xs text-gray-600 truncate cursor-pointer bg-white border border-gray-200 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors flex items-center justify-between"
 										>
 											<span className="truncate">
 												{imageFile ? imageFile.name : "Seleccionar imagen..."}
@@ -477,8 +508,6 @@ export const Dashboard = (): JSX.Element => {
 												Examinar
 											</span>
 										</label>
-
-										{/* Botón para quitar la imagen seleccionada si se arrepiente */}
 										{imageFile && (
 											<button
 												type="button"
@@ -576,20 +605,7 @@ export const Dashboard = (): JSX.Element => {
 					</div>
 				)}
 
-				{activeTab === "qr" && (
-					<div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm max-w-md mx-auto text-center space-y-4">
-						<h2 className="font-bold text-lg text-gray-800">
-							Código QR del Menú
-						</h2>
-						<div className="p-4 bg-white border border-gray-200 rounded-xl inline-block shadow-inner">
-							<QRCodeSVG value={publicMenuUrl} size={200} />
-						</div>
-						<p className="text-xs font-mono text-emerald-700 break-all bg-emerald-50 p-2 rounded-lg">
-							{publicMenuUrl}
-						</p>
-					</div>
-				)}
-
+				{/* Pestaña: Categorías */}
 				{activeTab === "categories" && (
 					<div className="max-w-md bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
 						<h2 className="font-bold text-gray-800">Crear Categoría</h2>
@@ -633,6 +649,67 @@ export const Dashboard = (): JSX.Element => {
 								</div>
 							))}
 						</div>
+					</div>
+				)}
+
+				{/* Pestaña NUEVA: Métodos de Pago */}
+				{activeTab === "payment-methods" && (
+					<div className="max-w-md bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4">
+						<div>
+							<h2 className="font-bold text-gray-800 text-base">
+								Métodos de Pago Habilitados
+							</h2>
+							<p className="text-xs text-gray-500 mt-0.5">
+								Seleccioná cuáles de estos métodos de pago aceptarás en tu
+								negocio. Tus clientes podrán elegirlos al momento de enviar el
+								pedido por WhatsApp.
+							</p>
+						</div>
+
+						<div className="space-y-2 pt-2">
+							{AVAILABLE_PAYMENT_OPTIONS.map((option) => {
+								const isSelected =
+									business?.payment_methods?.includes(option) || false;
+								return (
+									<button
+										type="button"
+										key={option}
+										onClick={() => togglePaymentMethod(option)}
+										className={`cursor-pointer w-full px-4 py-3 rounded-xl text-sm font-medium border transition-all flex items-center justify-between text-left ${
+											isSelected
+												? "bg-emerald-50 border-emerald-500 text-emerald-800 shadow-sm"
+												: "bg-white border-gray-200 text-gray-600 hover:bg-gray-50"
+										}`}
+									>
+										<span>{option}</span>
+										<span
+											className={`w-5 h-5 rounded-md flex items-center justify-center text-xs font-bold ${
+												isSelected
+													? "bg-emerald-600 text-white"
+													: "border border-gray-300 text-transparent"
+											}`}
+										>
+											✓
+										</span>
+									</button>
+								);
+							})}
+						</div>
+					</div>
+				)}
+
+				{/* Pestaña: Código QR */}
+				{activeTab === "qr" && (
+					<div className="bg-white p-6 rounded-xl border border-gray-200 shadow-sm max-w-md mx-auto text-center space-y-4">
+						<h2 className="font-bold text-lg text-gray-800">
+							Código QR del Menú
+						</h2>
+						<div className="p-4 bg-white border border-gray-200 rounded-xl inline-block shadow-inner">
+							<QRCodeSVG value={publicMenuUrl} size={200} />
+						</div>
+						<p className="text-xs font-mono text-emerald-700 break-all bg-emerald-50 p-2 rounded-lg">
+							{publicMenuUrl}
+						</p>
 					</div>
 				)}
 			</main>
