@@ -179,7 +179,7 @@ export const Login = (): JSX.Element => {
 						<button
 							type="submit"
 							disabled={loading}
-							className="w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
+							className="pointer w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
 						>
 							{loading ? (
 								<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -203,7 +203,7 @@ export const Login = (): JSX.Element => {
 								setIsRegistering(!isRegistering);
 								setErrorMessage("");
 							}}
-							className="text-xs text-emerald-600 hover:underline font-medium"
+							className="pointer text-xs text-emerald-600 hover:underline font-medium"
 						>
 							{isRegistering
 								? "¿Ya tenés una cuenta? Iniciar sesión"

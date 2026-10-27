@@ -167,7 +167,7 @@ export const Menu = (): JSX.Element => {
 					<button
 						type="button"
 						onClick={() => setSelectedCategory(null)}
-						className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+						className={`pointer px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
 							selectedCategory === null
 								? "bg-emerald-600 text-white shadow-sm"
 								: "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -180,7 +180,7 @@ export const Menu = (): JSX.Element => {
 							type="button"
 							key={cat.id}
 							onClick={() => setSelectedCategory(cat.id)}
-							className={`px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
+							className={`pointer px-4 py-1.5 rounded-full text-sm font-medium whitespace-nowrap transition-colors ${
 								selectedCategory === cat.id
 									? "bg-emerald-600 text-white shadow-sm"
 									: "bg-gray-100 text-gray-600 hover:bg-gray-200"
@@ -244,7 +244,7 @@ export const Menu = (): JSX.Element => {
 										type="button"
 										disabled={isAtMax}
 										onClick={() => addItem(product)}
-										className={`w-9 h-9 rounded-full flex items-center justify-center transition-colors shrink-0 ${
+										className={`pointer w-9 h-9 rounded-full flex items-center justify-center transition-colors shrink-0 ${
 											isAtMax
 												? "bg-gray-100 text-gray-300 cursor-not-allowed"
 												: "bg-emerald-50 hover:bg-emerald-100 text-emerald-700"
@@ -266,7 +266,7 @@ export const Menu = (): JSX.Element => {
 					<button
 						type="button"
 						onClick={() => setIsCartOpen(true)}
-						className={`w-full py-3.5 px-6 rounded-2xl shadow-lg font-semibold flex items-center justify-between transition-transform active:scale-95 ${
+						className={`pointer w-full py-3.5 px-6 rounded-2xl shadow-lg font-semibold flex items-center justify-between transition-transform active:scale-95 ${
 							hasStockError
 								? "bg-amber-600 text-white"
 								: "bg-emerald-600 text-white hover:bg-emerald-700"
@@ -302,7 +302,7 @@ export const Menu = (): JSX.Element => {
 							<button
 								type="button"
 								onClick={() => setIsCartOpen(false)}
-								className="text-gray-400 hover:text-gray-600 font-bold p-1"
+								className="pointer text-gray-400 hover:text-gray-600 font-bold p-1"
 							>
 								✕
 							</button>
@@ -349,7 +349,7 @@ export const Menu = (): JSX.Element => {
 													onClick={() =>
 														updateQuantity(item.product.id, item.quantity - 1)
 													}
-													className="p-1 text-gray-600 hover:text-black"
+													className="pointer p-1 text-gray-600 hover:text-black"
 												>
 													<Minus size={14} />
 												</button>
@@ -366,7 +366,7 @@ export const Menu = (): JSX.Element => {
 														)
 													}
 													disabled={isAtMaxStock}
-													className={`p-1 ${
+													className={`pointer p-1 ${
 														isAtMaxStock
 															? "text-gray-300 cursor-not-allowed"
 															: "text-gray-600 hover:text-black"
@@ -379,7 +379,7 @@ export const Menu = (): JSX.Element => {
 											<button
 												type="button"
 												onClick={() => removeItem(item.product.id)}
-												className="text-red-500 hover:text-red-700 p-1"
+												className="pointer text-red-500 hover:text-red-700 p-1"
 											>
 												<Trash2 size={16} />
 											</button>
@@ -478,7 +478,7 @@ export const Menu = (): JSX.Element => {
 								type="submit"
 								form="checkout-form"
 								disabled={hasStockError}
-								className={`w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-md transition-colors ${
+								className={`pointer w-full py-3 rounded-xl font-semibold flex items-center justify-center gap-2 shadow-md transition-colors ${
 									hasStockError
 										? "bg-gray-300 text-gray-500 cursor-not-allowed shadow-none"
 										: "bg-emerald-600 hover:bg-emerald-700 text-white"
