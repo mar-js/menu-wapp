@@ -22,10 +22,10 @@ export const Menu = (): JSX.Element => {
 	const [customerName, setCustomerName] = useState("");
 	const [customerAddress, setCustomerAddress] = useState("");
 	const [customerNotes, setCustomerNotes] = useState("");
+	const [paymentMethod, setPaymentMethod] = useState(""); // <-- Nuevo estado
 
 	const { items, addItem, updateQuantity, removeItem, getTotal, clearCart } =
 		useCartStore();
-
 	const fetchMenuData = useCallback(async () => {
 		try {
 			setLoading(true);
@@ -71,6 +71,15 @@ export const Menu = (): JSX.Element => {
 			setLoading(false);
 		}
 	}, [slug]);
+
+	// Seleccionar por defecto el primer método de pago disponible del comercio
+	useEffect(() => {
+		if (business?.payment_methods && business.payment_methods.length > 0) {
+			setPaymentMethod(business.payment_methods[0]);
+		} else {
+			setPaymentMethod("Efectivo");
+		}
+	}, [business]);
 
 	// 1. LLAMAMOS AL USEEFFECT AQUÍ ARRIBA (Antes de cualquier return condicional)
 	useEffect(() => {
@@ -166,12 +175,12 @@ export const Menu = (): JSX.Element => {
 
 	const handleCheckout = (e: React.FormEvent) => {
 		e.preventDefault();
-		// Validamos que nombre y dirección sean obligatorios
 		if (
 			!business ||
 			items.length === 0 ||
 			!customerName.trim() ||
 			!customerAddress.trim() ||
+			!paymentMethod ||
 			hasStockError
 		)
 			return;
@@ -180,6 +189,7 @@ export const Menu = (): JSX.Element => {
 			name: customerName,
 			address: customerAddress,
 			notes: customerNotes,
+			paymentMethod: paymentMethod, // <-- Lo pasamos aquí
 		});
 
 		window.open(whatsappUrl, "_blank");
@@ -515,6 +525,35 @@ export const Menu = (): JSX.Element => {
 												className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
 											/>
 										</div>
+
+										{/* NUEVO: Selector de Método de Pago */}
+										<div>
+											<label
+												className="block text-xs font-medium text-gray-700 mb-1"
+												htmlFor="paymentMethod"
+											>
+												Método de Pago *
+											</label>
+											<select
+												id="paymentMethod"
+												required
+												value={paymentMethod}
+												onChange={(e) => setPaymentMethod(e.target.value)}
+												className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+											>
+												{business.payment_methods &&
+												business.payment_methods.length > 0 ? (
+													business.payment_methods.map((method) => (
+														<option key={method} value={method}>
+															{method}
+														</option>
+													))
+												) : (
+													<option value="Efectivo">Efectivo</option>
+												)}
+											</select>
+										</div>
+
 										<div>
 											<label
 												className="block text-xs font-medium text-gray-700 mb-1"
