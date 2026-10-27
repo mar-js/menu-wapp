@@ -72,15 +72,6 @@ export const Menu = (): JSX.Element => {
 		}
 	}, [slug]);
 
-	// Seleccionar por defecto el primer método de pago disponible del comercio
-	useEffect(() => {
-		if (business?.payment_methods && business.payment_methods.length > 0) {
-			setPaymentMethod(business.payment_methods[0]);
-		} else {
-			setPaymentMethod("Efectivo");
-		}
-	}, [business]);
-
 	// 1. LLAMAMOS AL USEEFFECT AQUÍ ARRIBA (Antes de cualquier return condicional)
 	useEffect(() => {
 		fetchMenuData();
@@ -527,6 +518,7 @@ export const Menu = (): JSX.Element => {
 										</div>
 
 										{/* NUEVO: Selector de Método de Pago */}
+										{/* Selector de Método de Pago con opción por defecto deshabilitada */}
 										<div>
 											<label
 												className="block text-xs font-medium text-gray-700 mb-1"
@@ -541,6 +533,9 @@ export const Menu = (): JSX.Element => {
 												onChange={(e) => setPaymentMethod(e.target.value)}
 												className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
 											>
+												<option value="" disabled>
+													Elige tu método de pago
+												</option>
 												{business.payment_methods &&
 												business.payment_methods.length > 0 ? (
 													business.payment_methods.map((method) => (
