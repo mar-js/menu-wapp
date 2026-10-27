@@ -155,9 +155,11 @@ export const Menu = (): JSX.Element => {
 							Abierto para pedidos
 						</p>
 					</div>
-					<div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 font-bold shrink-0">
-						{business.name.charAt(0)}
-					</div>
+					{isOwner && (
+						<h4 className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 font-bold shrink-0">
+							{business.name.charAt(0)}
+						</h4>
+					)}
 				</div>
 
 				{/* Categorías (Incluye opción "Todos") */}
