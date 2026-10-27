@@ -285,7 +285,11 @@ export const Dashboard = (): JSX.Element => {
 							<h2 className="font-bold text-gray-800 mb-4 flex items-center gap-2">
 								<Plus size={18} /> Nuevo Producto
 							</h2>
-							<form onSubmit={handleCreateProduct} className="space-y-3">
+							<form
+								onSubmit={handleCreateProduct}
+								className="space-y-3"
+								id="save-product-form"
+							>
 								<div>
 									<label
 										className="block text-xs font-semibold text-gray-600 mb-1"
@@ -505,6 +509,7 @@ export const Dashboard = (): JSX.Element => {
 								</div>
 								<button
 									type="submit"
+									form="save-product-form"
 									disabled={uploadingImage}
 									className="pointer w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
 								>
@@ -588,7 +593,11 @@ export const Dashboard = (): JSX.Element => {
 				{activeTab === "categories" && (
 					<div className="max-w-md bg-white p-5 rounded-xl border border-gray-200 shadow-sm space-y-4">
 						<h2 className="font-bold text-gray-800">Crear Categoría</h2>
-						<form onSubmit={handleCreateCategory} className="flex gap-2">
+						<form
+							onSubmit={handleCreateCategory}
+							className="flex gap-2"
+							id="add-category-form"
+						>
 							<input
 								type="text"
 								required
@@ -599,6 +608,7 @@ export const Dashboard = (): JSX.Element => {
 							/>
 							<button
 								type="submit"
+								form="add-category-form"
 								className="pointer bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors"
 							>
 								Agregar

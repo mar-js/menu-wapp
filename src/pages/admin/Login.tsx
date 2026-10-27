@@ -90,7 +90,7 @@ export const Login = (): JSX.Element => {
 						</div>
 					)}
 
-					<form className="space-y-4" onSubmit={handleAuth}>
+					<form className="space-y-4" onSubmit={handleAuth} id="login-form">
 						{isRegistering && (
 							<>
 								<div>
@@ -178,6 +178,7 @@ export const Login = (): JSX.Element => {
 
 						<button
 							type="submit"
+							form="login-form"
 							disabled={loading}
 							className="pointer w-full bg-emerald-600 hover:bg-emerald-700 text-white font-semibold py-2.5 px-4 rounded-xl text-sm transition-colors flex items-center justify-center gap-2"
 						>
