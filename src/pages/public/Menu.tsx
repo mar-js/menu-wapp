@@ -166,10 +166,12 @@ export const Menu = (): JSX.Element => {
 
 	const handleCheckout = (e: React.FormEvent) => {
 		e.preventDefault();
+		// Validamos que nombre y dirección sean obligatorios
 		if (
 			!business ||
 			items.length === 0 ||
 			!customerName.trim() ||
+			!customerAddress.trim() ||
 			hasStockError
 		)
 			return;
@@ -208,9 +210,9 @@ export const Menu = (): JSX.Element => {
 						</p>
 					</div>
 					{isOwner && (
-						<h4 className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 font-bold shrink-0">
+						<div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 font-bold shrink-0">
 							{business.name.charAt(0)}
-						</h4>
+						</div>
 					)}
 				</div>
 
@@ -479,11 +481,12 @@ export const Menu = (): JSX.Element => {
 										className="block text-xs font-medium text-gray-700 mb-1"
 										htmlFor="customerAddress"
 									>
-										Dirección de Entrega (Opcional)
+										Dirección de Entrega *
 									</label>
 									<input
 										id="customerAddress"
 										type="text"
+										required
 										value={customerAddress}
 										onChange={(e) => setCustomerAddress(e.target.value)}
 										placeholder="Ej. Av. San Martín 123"
