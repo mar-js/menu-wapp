@@ -14,6 +14,28 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.1.0] - 2026-10-27
+
+### Added
+
+- **Sistema de Gestión de Pedidos (`Orders`) & Supabase:**
+  - Creación de la tabla `orders` en Supabase con Row Level Security (RLS) vinculada de forma segura por `owner_id`.
+  - Integración del checkout del menú público (`Menu.tsx`) para registrar pedidos en tiempo real con estado `pending`.
+  - Automatización del descuento de stock en la base de datos al confirmar un pedido.
+- **Panel de Pedidos en el Dashboard (`OrderList`):**
+  - Nueva pestaña **Pedidos** para que el comerciante visualice la lista de órdenes entrantes.
+  - Filtros interactivos por estado del pedido (_Todos_, _Pendientes_, _Completados_, _Cancelados_).
+  - Acciones rápidas para **Finalizar** o **Cancelar** pedidos, con reversión automática del stock al inventario de productos.
+  - Registro independiente del teléfono de contacto del cliente y visualización destacada de **notas adicionales (📝)**.
+- **Control de Stock Rápido en Dashboard:**
+  - Componente `StockControl` con insignias visuales dinámicas (_En Stock_, _Poco Stock_, _Sin Stock_) y botones de ajuste rápido (`+` / `-`).
+
+### Changed
+
+- Actualización del flujo de checkout público para solicitar el número de teléfono del cliente de forma separada de las notas adicionales.
+
+---
+
 ## [1.0.0] - 2026-10-27
 
 ### Added
