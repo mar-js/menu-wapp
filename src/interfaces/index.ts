@@ -1,5 +1,11 @@
 import type { JSX } from "react/jsx-runtime";
 
+export interface IStockControl {
+	productId: string;
+	currentStock: number;
+	onStockChange: (productId: string, newStock: number) => void;
+}
+
 export interface IBusinessState {
 	products: IProduct[];
 	updateStock: (productId: string, newStock: number) => Promise<void>;
