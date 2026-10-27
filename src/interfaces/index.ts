@@ -26,6 +26,7 @@ export interface IBusiness {
 	whatsapp_number: string;
 	currency_symbol: string;
 	is_active: boolean;
+	payment_methods: string[];
 }
 
 export interface ICategory {
