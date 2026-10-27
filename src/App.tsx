@@ -5,6 +5,7 @@ import { Dashboard } from "./pages/admin/Dashboard";
 import { Login } from "./pages/admin/Login";
 import { Home } from "./pages/public/Home";
 import { Menu } from "./pages/public/Menu";
+import { Terms } from "./pages/public/Terms";
 
 export const App = (): JSX.Element => {
 	return (
@@ -12,6 +13,7 @@ export const App = (): JSX.Element => {
 			<Switch>
 				{/* Rutas Públicas Libre Acceso */}
 				<Route path="/" component={Home} />
+				<Route path="/terms" component={Terms} />
 				<Route path="/admin/login" component={Login} />
 				{/* Ruta Protegida: Blindada contra usuarios no autenticados */}
 				<Route path="/admin">
