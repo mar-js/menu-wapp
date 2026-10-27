@@ -1,0 +1,47 @@
+# Changelog
+
+Todos los cambios notables en este proyecto serán documentados en este archivo.
+
+El formato está basado en [Keep a Changelog](https://keepachangelog.com/es-ES/1.1.0/),
+y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
+
+## [Unreleased]
+
+### Planned
+
+- Panel de métricas y estadísticas de pedidos para el comerciante.
+- Soporte para múltiples sucursales.
+
+---
+
+## [1.0.0] - 2026-10-27
+
+### Added
+
+- **Dashboard de Administración:**
+  - Pestaña para la gestión de productos (alta, foto, precio, descripción, stock e imágenes).
+  - Pestaña para la creación y eliminación de categorías.
+  - Pestaña de configuración de **Métodos de Pago** permitidos por el comercio.
+  - Generación de Código QR y enlace público directo del local.
+- **Menú Público (`/:slug`):**
+  - Catálogo interactivo adaptado a dispositivos móviles.
+  - Carrito de compras con control de stock y validación de ítems en tiempo real.
+  - Modal de checkout con campos obligatorios para nombre, dirección de entrega y **selector obligatorio de método de pago**.
+- **Integración con WhatsApp:**
+  - Generación de mensaje estructurado con el ticket del pedido, dirección, método de pago y desglose de subtotales y total.
+- **Legal y SEO:**
+  - Página dedicada de **Términos y Condiciones** (`/terms`) para el marco legal de Argentina.
+  - Configuración de Open Graph, títulos dinámicos y metadatos SEO.
+- **Infraestructura:**
+  - Archivo `vercel.json` configurado para enrutamiento SPA en Vercel.
+  - Licencia MIT agregada al proyecto.
+
+### Changed
+
+- Formato de moneda ajustado a la convención de Argentina (`$1.000,00` con puntos para miles y coma para decimales).
+- El selector de métodos de pago en el checkout exige ahora una selección activa, deshabilitando la opción por defecto sin valor.
+
+### Fixed
+
+- Corrección de bugs en la desincronización del estado del carrito al estar vacío.
+- Solución de advertencias de linter en hooks de React y rutas SPA.
