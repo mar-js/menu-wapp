@@ -234,7 +234,7 @@ export const Dashboard = (): JSX.Element => {
 						<button
 							type="button"
 							onClick={handleLogout}
-							className="pointer text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
+							className="cursor-pointer text-xs bg-gray-100 text-gray-600 px-3 py-1.5 rounded-lg font-semibold hover:bg-gray-200 transition-colors"
 						>
 							Cerrar Sesión
 						</button>
@@ -247,7 +247,7 @@ export const Dashboard = (): JSX.Element => {
 					<button
 						type="button"
 						onClick={() => setActiveTab("products")}
-						className={`pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+						className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
 							activeTab === "products"
 								? "bg-emerald-600 text-white"
 								: "bg-white text-gray-600 hover:bg-gray-50"
@@ -258,7 +258,7 @@ export const Dashboard = (): JSX.Element => {
 					<button
 						type="button"
 						onClick={() => setActiveTab("categories")}
-						className={`pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+						className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
 							activeTab === "categories"
 								? "bg-emerald-600 text-white"
 								: "bg-white text-gray-600 hover:bg-gray-50"
@@ -269,7 +269,7 @@ export const Dashboard = (): JSX.Element => {
 					<button
 						type="button"
 						onClick={() => setActiveTab("qr")}
-						className={`pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
+						className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors ${
 							activeTab === "qr"
 								? "bg-emerald-600 text-white"
 								: "bg-white text-gray-600 hover:bg-gray-50"
@@ -352,7 +352,7 @@ export const Dashboard = (): JSX.Element => {
 										<button
 											type="button"
 											onClick={() => setIsCreatingCategory(true)}
-											className="pointer text-xs text-emerald-600 hover:text-emerald-700 font-semibold flex items-center gap-1"
+											className="cursor-pointer text-xs text-emerald-600 hover:text-emerald-700 font-semibold flex items-center gap-1"
 										>
 											+ Nueva categoría
 										</button>
@@ -426,7 +426,7 @@ export const Dashboard = (): JSX.Element => {
 															);
 														}
 													}}
-													className="pointer bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-md text-xs font-semibold shrink-0"
+													className="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white px-3 py-1.5 rounded-md text-xs font-semibold shrink-0"
 												>
 													Guardar
 												</button>
@@ -436,7 +436,7 @@ export const Dashboard = (): JSX.Element => {
 														setQuickCategoryName("");
 														setIsCreatingCategory(false);
 													}}
-													className="pointer text-gray-500 hover:text-gray-700 text-xs px-2 py-1.5 shrink-0"
+													className="cursor-pointer text-gray-500 hover:text-gray-700 text-xs px-2 py-1.5 shrink-0"
 												>
 													Cancelar
 												</button>
@@ -468,7 +468,7 @@ export const Dashboard = (): JSX.Element => {
 										{/* Label personalizado que actúa como botón */}
 										<label
 											htmlFor="productImage"
-											className="flex-1 text-xs text-gray-600 truncate cursor-pointer bg-white border border-gray-200 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors flex items-center justify-between"
+											className="flex-1 text-xs text-gray-600 truncate cursor-cursor-pointer bg-white border border-gray-200 px-3 py-1.5 rounded-md hover:bg-gray-100 transition-colors flex items-center justify-between"
 										>
 											<span className="truncate">
 												{imageFile ? imageFile.name : "Seleccionar imagen..."}
@@ -483,7 +483,7 @@ export const Dashboard = (): JSX.Element => {
 											<button
 												type="button"
 												onClick={() => setImageFile(null)}
-												className="pointer text-red-500 hover:text-red-700 text-xs font-medium px-1 shrink-0"
+												className="cursor-pointer text-red-500 hover:text-red-700 text-xs font-medium px-1 shrink-0"
 												title="Quitar imagen"
 											>
 												✕
@@ -511,7 +511,7 @@ export const Dashboard = (): JSX.Element => {
 									type="submit"
 									form="save-product-form"
 									disabled={uploadingImage}
-									className="pointer w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
+									className="cursor-pointer w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg text-sm transition-colors flex items-center justify-center gap-2"
 								>
 									{uploadingImage ? (
 										<div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
@@ -554,7 +554,7 @@ export const Dashboard = (): JSX.Element => {
 										<button
 											type="button"
 											onClick={() => toggleProductAvailability(p)}
-											className="pointer p-2 rounded-lg text-xs bg-gray-100"
+											className="cursor-pointer p-2 rounded-lg text-xs bg-gray-100"
 										>
 											{p.is_available ? (
 												<Eye size={16} />
@@ -565,7 +565,7 @@ export const Dashboard = (): JSX.Element => {
 										<button
 											type="button"
 											onClick={() => handleDeleteProduct(p.id)}
-											className="pointer p-2 text-red-500 hover:bg-red-50 rounded-lg"
+											className="cursor-pointer p-2 text-red-500 hover:bg-red-50 rounded-lg"
 										>
 											<Trash2 size={16} />
 										</button>
@@ -609,7 +609,7 @@ export const Dashboard = (): JSX.Element => {
 							<button
 								type="submit"
 								form="add-category-form"
-								className="pointer bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors"
+								className="cursor-pointer bg-emerald-600 hover:bg-emerald-700 text-white font-medium px-4 py-2 rounded-lg text-sm transition-colors"
 							>
 								Agregar
 							</button>
@@ -625,7 +625,7 @@ export const Dashboard = (): JSX.Element => {
 									<button
 										type="button"
 										onClick={() => handleDeleteCategory(cat.id)}
-										className="pointer p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+										className="cursor-pointer p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
 										title="Eliminar categoría"
 									>
 										<Trash2 size={16} />
