@@ -1,12 +1,20 @@
 {
-  "name": "menu-wapp",
+  "name": "menuwapp",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "Plataforma SaaS de catálogos digitales con QR y pedidos por WhatsApp para emprendedores.",
+  "author": {
+    "name": "Martín Agüera",
+    "email": "maguera37@gmail.com",
+    "url": "https://github.com/mar-js"
+  },
+  "license": "MIT",
   "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "tsc -b && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "lint": "biome check ."
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.118.0",
