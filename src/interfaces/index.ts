@@ -1,5 +1,32 @@
 import type { JSX } from "react/jsx-runtime";
 
+export interface IOrderItem {
+	product_id: string;
+	name: string;
+	price: number;
+	quantity: number;
+	notes?: string;
+}
+
+export interface IOrder {
+	id: string;
+	business_id: string;
+	customer_name: string;
+	customer_phone?: string;
+	customer_address: string;
+	payment_method: string;
+	total: number;
+	items: IOrderItem[];
+	status: "pending" | "completed" | "cancelled";
+	created_at: string;
+}
+
+export interface IOrderList {
+	businessId: string;
+	products: IProduct[];
+	onStockRestored?: () => void;
+}
+
 export interface IStockControl {
 	productId: string;
 	currentStock: number;
