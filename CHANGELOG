@@ -14,6 +14,22 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.1.1] - 2026-10-27
+
+### Added
+
+- Corregido error en compilación:
+  - src/store/useBusinessStore.ts:5:62 - error TS6133: 'get' is declared but its value is never read.
+    5 export const useBusinessStore = create<IBusinessState>((set, get) => ({}))
+
+### Changed
+
+- Se borro la propiedad "get" que no se usaba del store useBusinessStore.
+
+---
+
+---
+
 ## [1.1.0] - 2026-10-27
 
 ### Added
