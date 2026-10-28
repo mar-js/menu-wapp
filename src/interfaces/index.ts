@@ -1,4 +1,4 @@
-import type { JSX } from "react/jsx-runtime";
+import type { JSX, LazyExoticComponent } from "react";
 
 export interface IOrderItem {
 	product_id: string;
@@ -40,7 +40,7 @@ export interface IBusinessState {
 }
 
 export interface IProtectedRoute {
-	component: () => JSX.Element;
+	component: LazyExoticComponent<() => JSX.Element>;
 }
 
 export interface ICartState {
