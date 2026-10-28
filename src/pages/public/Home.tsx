@@ -1,8 +1,26 @@
-import { ArrowRight, DollarSign, Smartphone, Store, Zap } from "lucide-react";
+import {
+	ArrowRight,
+	Check,
+	Copy,
+	DollarSign,
+	Heart,
+	Smartphone,
+	Store,
+	Zap,
+} from "lucide-react";
+import { useState } from "react";
 import type { JSX } from "react/jsx-runtime";
 import { Link } from "wouter";
 
 export const Home = (): JSX.Element => {
+	const [copied, setCopied] = useState(false);
+	const alias = import.meta.env.VITE_ALIAS;
+
+	const handleCopyAlias = () => {
+		navigator.clipboard.writeText(alias);
+		setCopied(true);
+		setTimeout(() => setCopied(false), 2000);
+	};
 	return (
 		<div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
 			{/* Header / Navbar */}
@@ -187,6 +205,59 @@ export const Home = (): JSX.Element => {
 					>
 						Crear mi catálogo en MenuWapp
 					</Link>
+				</div>
+			</section>
+
+			{/* Sección de Colaboración / Apoyo Voluntario */}
+			<section className="max-w-4xl mx-auto px-4 pb-12">
+				<div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
+					<div className="space-y-2 text-center md:text-left">
+						<div className="inline-flex items-center gap-2 bg-rose-50 text-rose-600 px-3 py-1 rounded-full text-xs font-bold">
+							<Heart size={14} className="fill-rose-500" /> Proyecto en
+							Crecimiento
+						</div>
+						<h3 className="text-xl sm:text-2xl font-extrabold text-slate-900">
+							¿Te sirve MenuWapp? ¡Invitame un cafecito!
+						</h3>
+						<p className="text-xs sm:text-sm text-slate-600 max-w-md leading-relaxed">
+							Actualmente podés usar la plataforma sin cargo y sin comisiones
+							por venta. Si te ayuda a vender más en tu negocio y querés
+							colaborar con el mantenimiento y desarrollo, podés hacer una
+							transferencia voluntaria con el monto que desees.
+						</p>
+					</div>
+
+					{/* Tarjeta de Datos de Transferencia */}
+					<div className="bg-slate-50 border border-slate-200 p-4 sm:p-5 rounded-2xl shrink-0 w-full md:w-auto space-y-3">
+						<div className="text-xs text-slate-500">
+							Titular:{" "}
+							<strong className="text-slate-800 font-bold block sm:inline">
+								PABLO MARTIN AGÜERA
+							</strong>
+						</div>
+
+						<div className="flex items-center justify-between gap-3 bg-white border border-slate-200 p-2.5 rounded-xl">
+							<div className="text-xs font-mono font-bold text-slate-800">
+								<span className="text-slate-400 font-normal mr-1 block text-[10px] uppercase">
+									Alias MP / CBU:
+								</span>
+								{alias}
+							</div>
+							<button
+								type="button"
+								onClick={handleCopyAlias}
+								className="cursor-pointer bg-slate-900 hover:bg-slate-800 text-white p-2 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-colors shrink-0"
+								title="Copiar Alias"
+							>
+								{copied ? (
+									<Check size={14} className="text-emerald-400" />
+								) : (
+									<Copy size={14} />
+								)}
+								<span>{copied ? "¡Copiado!" : "Copiar"}</span>
+							</button>
+						</div>
+					</div>
 				</div>
 			</section>
 
