@@ -239,24 +239,28 @@ export const Menu = (): JSX.Element => {
 		<div className="min-h-screen bg-gray-50 pb-24">
 			{/* Header del Negocio */}
 			<header className="bg-white shadow-sm sticky top-0 z-20">
-				<div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between">
+				<div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between gap-3">
 					{/* Botón para volver al Admin (Solo visible para el dueño) */}
 					{isOwner && (
 						<a
 							href="/admin"
-							className="bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded-xl transition-colors flex items-center gap-1 text-xs font-semibold"
+							className="bg-gray-100 hover:bg-gray-200 text-gray-700 p-2 rounded-xl transition-colors flex items-center gap-1 text-xs font-semibold shrink-0"
 							title="Volver al Panel de Administración"
 						>
 							<ArrowLeft size={16} /> Admin
 						</a>
 					)}
-					<div>
-						<h1 className="text-xl font-bold text-gray-900">{business.name}</h1>
+
+					<div className="min-w-0 flex-1">
+						<h1 className="text-base sm:text-xl font-bold text-gray-900 truncate">
+							{business.name}
+						</h1>
 						<p className="text-xs text-emerald-600 font-medium flex items-center gap-1">
-							<span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>{" "}
+							<span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse shrink-0"></span>{" "}
 							Abierto para pedidos
 						</p>
 					</div>
+
 					{isOwner && (
 						<div className="w-10 h-10 rounded-full bg-emerald-50 flex items-center justify-center text-emerald-700 font-bold shrink-0">
 							{business.name.charAt(0)}
