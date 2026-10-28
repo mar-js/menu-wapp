@@ -4,12 +4,14 @@ import {
 	EyeOff,
 	Image as ImageIcon,
 	Layers,
+	Menu as MenuIcon,
 	Package,
 	Plus,
 	QrCode,
 	ShoppingBag,
 	Store,
 	Trash2,
+	X,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
 import { useCallback, useEffect, useState } from "react";
@@ -28,6 +30,7 @@ export const Dashboard = (): JSX.Element => {
 	const [products, setProducts] = useState<IProduct[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [uploadingImage, setUploadingImage] = useState<boolean>(false);
+	const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
 	// Agregamos "payment-methods" a las pestañas activas posibles
 	const [activeTab, setActiveTab] = useState<
@@ -250,15 +253,17 @@ export const Dashboard = (): JSX.Element => {
 
 	return (
 		<div className="min-h-screen bg-gray-100">
-			<header className="bg-white border-b border-gray-200 sticky top-0 z-10">
-				<div className="max-w-5xl mx-auto px-4 py-4 flex justify-between items-center">
-					<div className="flex items-center gap-2">
-						<Store className="text-emerald-600" />
-						<h1 className="font-bold text-xl text-gray-800">
+			<header className="bg-white border-b border-gray-200 sticky top-0 z-20">
+				<div className="max-w-5xl mx-auto px-4 py-3 sm:py-4 flex justify-between items-center">
+					<div className="flex items-center gap-2 min-w-0">
+						<Store className="text-emerald-600 shrink-0" size={22} />
+						<h1 className="font-bold text-base sm:text-xl text-gray-800 truncate">
 							{business?.name || "Panel Admin"}
 						</h1>
 					</div>
-					<div className="flex items-center gap-3">
+
+					{/* Acciones en Desktop */}
+					<div className="hidden sm:flex items-center gap-3">
 						<a
 							href={publicMenuUrl}
 							target="_blank"
@@ -275,7 +280,38 @@ export const Dashboard = (): JSX.Element => {
 							Cerrar Sesión
 						</button>
 					</div>
+
+					{/* Botón Hamburguesa en Mobile */}
+					<button
+						type="button"
+						onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+						className="sm:hidden p-2 text-gray-700 hover:text-gray-900 focus:outline-none"
+						aria-label="Abrir menú"
+					>
+						{mobileMenuOpen ? <X size={24} /> : <MenuIcon size={24} />}
+					</button>
 				</div>
+
+				{/* Menú Desplegable Mobile para el Header */}
+				{mobileMenuOpen && (
+					<div className="sm:hidden bg-white border-t border-gray-100 px-4 py-3 space-y-2 shadow-lg">
+						<a
+							href={publicMenuUrl}
+							target="_blank"
+							rel="noreferrer"
+							className="block text-center text-xs bg-emerald-50 text-emerald-700 px-3 py-2.5 rounded-xl font-semibold hover:bg-emerald-100 transition-colors"
+						>
+							Ver Menú Público ↗
+						</a>
+						<button
+							type="button"
+							onClick={handleLogout}
+							className="cursor-pointer w-full text-center text-xs bg-gray-100 text-gray-600 px-3 py-2.5 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+						>
+							Cerrar Sesión
+						</button>
+					</div>
+				)}
 			</header>
 
 			<main className="max-w-5xl mx-auto px-4 py-6">
