@@ -239,7 +239,7 @@ export const Home = (): JSX.Element => {
 						<div className="flex items-center justify-between gap-3 bg-white border border-slate-200 p-2.5 rounded-xl">
 							<div className="text-xs font-mono font-bold text-slate-800">
 								<span className="text-slate-400 font-normal mr-1 block text-[10px] uppercase">
-									Alias MP / CBU:
+									Alias:
 								</span>
 								{alias}
 							</div>
