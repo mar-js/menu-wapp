@@ -14,6 +14,17 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.1.3] - 2026-10-28
+
+### Added
+
+- **Mejoras de Responsividad (Mobile):**
+  - Incorporación de menú de navegación tipo hamburguesa en el Header de `Home.tsx` y `Dashboard.tsx` para evitar colapsos visuales en pantallas pequeñas.
+  - Asegurada la correcta escala móvil restaurando las metaetiquetas viewport en el archivo HTML principal.
+  - Ajustes de truncado (`truncate`) y desborde en el nombre del comercio dentro del header del menú público (`Menu.tsx`).
+
+---
+
 ## [1.1.2] - 2026-10-28
 
 ### Added
