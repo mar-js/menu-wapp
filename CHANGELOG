@@ -14,6 +14,16 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.1.4] - 2026-10-28
+
+### Changed
+
+- **Optimización de Rendimiento & Code Splitting (`App.tsx`):**
+  - Implementación de `React.lazy` y `Suspense` para la carga perezosa de rutas públicas y privadas.
+  - Reducción del tamaño del bundle principal eliminando el aviso de tamaño de chunk en el build de Vite.
+
+---
+
 ## [1.1.3] - 2026-10-28
 
 ### Added
