@@ -4,8 +4,10 @@ import {
 	Copy,
 	DollarSign,
 	Heart,
+	Menu as MenuIcon,
 	Smartphone,
 	Store,
+	X,
 	Zap,
 } from "lucide-react";
 import { useState } from "react";
@@ -14,6 +16,7 @@ import { Link } from "wouter";
 
 export const Home = (): JSX.Element => {
 	const [copied, setCopied] = useState(false);
+	const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 	const alias = import.meta.env.VITE_ALIAS;
 
 	const handleCopyAlias = () => {
@@ -21,6 +24,7 @@ export const Home = (): JSX.Element => {
 		setCopied(true);
 		setTimeout(() => setCopied(false), 2000);
 	};
+
 	return (
 		<div className="min-h-screen bg-slate-50 text-slate-800 font-sans">
 			{/* Header / Navbar */}
@@ -35,7 +39,8 @@ export const Home = (): JSX.Element => {
 						</span>
 					</div>
 
-					<div className="flex items-center gap-3">
+					{/* Botones Desktop */}
+					<div className="hidden sm:flex items-center gap-3">
 						<Link
 							href="/admin/login"
 							className="text-xs font-semibold text-slate-600 hover:text-slate-900 px-3 py-2 transition-colors"
@@ -49,7 +54,37 @@ export const Home = (): JSX.Element => {
 							Crear Catálogo Gratis
 						</Link>
 					</div>
+
+					{/* Botón Hamburguesa Mobile */}
+					<button
+						type="button"
+						onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+						className="sm:hidden p-2 text-slate-700 hover:text-slate-900 focus:outline-none"
+						aria-label="Abrir menú"
+					>
+						{mobileMenuOpen ? <X size={24} /> : <MenuIcon size={24} />}
+					</button>
 				</div>
+
+				{/* Menú Desplegable Mobile */}
+				{mobileMenuOpen && (
+					<div className="sm:hidden bg-white border-b border-slate-200 px-4 py-4 space-y-3 shadow-lg">
+						<Link
+							href="/admin/login"
+							onClick={() => setMobileMenuOpen(false)}
+							className="block text-center text-xs font-semibold text-slate-700 hover:text-slate-900 py-2.5 rounded-xl bg-slate-50 border border-slate-200"
+						>
+							Iniciar sesión
+						</Link>
+						<Link
+							href="/admin/login"
+							onClick={() => setMobileMenuOpen(false)}
+							className="block text-center bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold py-3 rounded-xl shadow-md"
+						>
+							Crear Catálogo Gratis
+						</Link>
+					</div>
+				)}
 			</header>
 
 			{/* Hero Section */}
