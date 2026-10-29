@@ -1,4 +1,11 @@
-import { ArrowLeft, MessageCircle, Minus, Plus, Trash2 } from "lucide-react";
+import {
+	ArrowLeft,
+	MessageCircle,
+	Minus,
+	Plus,
+	Trash2,
+	Truck,
+} from "lucide-react";
 import { useCallback, useEffect, useState } from "react";
 import type { JSX } from "react/jsx-runtime";
 import { useRoute } from "wouter";
@@ -7,6 +14,12 @@ import { supabase } from "../../lib/supabase";
 import { useCartStore } from "../../store/useCartStore";
 import { formatPrice } from "../../utils/formatPrice";
 import { buildWhatsAppUrl } from "../../utils/whatsapp";
+
+interface IDeliveryZone {
+	id: string;
+	name: string;
+	price: number;
+}
 
 export const Menu = (): JSX.Element => {
 	const [, params] = useRoute("/:slug");
@@ -21,13 +34,16 @@ export const Menu = (): JSX.Element => {
 
 	// Estados del formulario de cliente para el checkout de WhatsApp
 	const [customerName, setCustomerName] = useState("");
-	const [customerPhone, setCustomerPhone] = useState(""); // <-- NUEVO ESTADO
+	const [customerPhone, setCustomerPhone] = useState("");
 	const [customerAddress, setCustomerAddress] = useState("");
 	const [customerNotes, setCustomerNotes] = useState("");
-	const [paymentMethod, setPaymentMethod] = useState(""); // <-- Nuevo estado
+	const [paymentMethod, setPaymentMethod] = useState("");
+	const [selectedDeliveryZone, setSelectedDeliveryZone] =
+		useState<IDeliveryZone | null>(null);
 
 	const { items, addItem, updateQuantity, removeItem, getTotal, clearCart } =
 		useCartStore();
+
 	const fetchMenuData = useCallback(async () => {
 		try {
 			setLoading(true);
@@ -57,7 +73,6 @@ export const Menu = (): JSX.Element => {
 				.order("sort_order", { ascending: true });
 
 			setCategories(catData || []);
-			// NOTA: Dejamos selectedCategory en null por defecto para mostrar "Todos" los productos inicialmente
 
 			// 3. Obtener productos disponibles
 			const { data: prodData } = await supabase
@@ -74,12 +89,10 @@ export const Menu = (): JSX.Element => {
 		}
 	}, [slug]);
 
-	// 1. LLAMAMOS AL USEEFFECT AQUÍ ARRIBA (Antes de cualquier return condicional)
 	useEffect(() => {
 		fetchMenuData();
 	}, [fetchMenuData]);
 
-	// 2. SEO Dinámico (También al nivel superior, dependiendo de business)
 	useEffect(() => {
 		if (business) {
 			document.title = `${business.name} | Catálogo y Pedidos - MenuWapp`;
@@ -94,41 +107,8 @@ export const Menu = (): JSX.Element => {
 				"content",
 				`Mirá el catálogo de ${business.name}, consultá disponibilidad y hacé tu pedido o consulta directamente por WhatsApp.`,
 			);
-
-			const ogTitle = document.querySelector('meta[property="og:title"]');
-			if (ogTitle)
-				ogTitle.setAttribute("content", `${business.name} - Catálogo Online`);
-
-			const ogDesc = document.querySelector('meta[property="og:description"]');
-			if (ogDesc)
-				ogDesc.setAttribute(
-					"content",
-					`Conectate con ${business.name} y chateá directo por WhatsApp para coordinar tu pedido.`,
-				);
 		}
 	}, [business]);
-
-	// AHORA SÍ: Los returns condicionales van abajo de todos los hooks
-	if (loading) {
-		return (
-			<div className="min-h-screen flex items-center justify-center bg-gray-50">
-				<div className="animate-spin rounded-full h-12 w-12 border-b-2 border-emerald-600"></div>
-			</div>
-		);
-	}
-
-	if (!business) {
-		return (
-			<div className="min-h-screen flex flex-col items-center justify-center bg-gray-50 p-4 text-center">
-				<h1 className="text-2xl font-bold text-gray-800 mb-2">
-					Local no encontrado
-				</h1>
-				<p className="text-gray-600">
-					El menú que buscás no existe o fue deshabilitado.
-				</p>
-			</div>
-		);
-	}
 
 	if (loading) {
 		return (
@@ -157,7 +137,13 @@ export const Menu = (): JSX.Element => {
 
 	const totalItemsCount = items.reduce((acc, item) => acc + item.quantity, 0);
 
-	// Evaluamos el error cruzando CADA item con su producto correspondiente de la DB
+	// Cálculo del costo de envío
+	const deliveryCost =
+		business.has_delivery && selectedDeliveryZone
+			? selectedDeliveryZone.price
+			: 0;
+	const finalTotal = getTotal() + deliveryCost;
+
 	const hasStockError = items.some((item) => {
 		const realProduct =
 			products.find((p) => p.id === item.product.id) || item.product;
@@ -174,21 +160,22 @@ export const Menu = (): JSX.Element => {
 			!customerName.trim() ||
 			!customerPhone.trim() ||
 			!customerAddress.trim() ||
+			(business.has_delivery && !selectedDeliveryZone) ||
 			!paymentMethod ||
 			hasStockError
 		)
 			return;
 
 		try {
-			// 1. Guardar el pedido en la tabla "orders" de Supabase con el teléfono real
+			// 1. Guardar el pedido en la tabla "orders" de Supabase incluyendo datos de envío
 			const { error: orderError } = await supabase.from("orders").insert({
 				business_id: business.id,
 				customer_name: customerName.trim(),
-				customer_phone: customerPhone.trim(), // <-- Aquí va el teléfono separado
-				customer_notes: customerNotes.trim() ? customerNotes.trim() : null, // <-- NOTAS ADICIONALES
+				customer_phone: customerPhone.trim(),
+				customer_notes: customerNotes.trim() ? customerNotes.trim() : null,
 				customer_address: customerAddress.trim(),
 				payment_method: paymentMethod,
-				total: getTotal(),
+				total: finalTotal,
 				items: items.map((item) => ({
 					product_id: item.product.id,
 					name: item.product.name,
@@ -203,7 +190,7 @@ export const Menu = (): JSX.Element => {
 				console.error("Error al guardar el pedido en Supabase:", orderError);
 			}
 
-			// 2. Descontar el stock de cada producto comprado en la tabla "products"
+			// 2. Descontar el stock
 			for (const item of items) {
 				const currentProduct = products.find((p) => p.id === item.product.id);
 				if (
@@ -219,12 +206,17 @@ export const Menu = (): JSX.Element => {
 				}
 			}
 
-			// 3. Generar URL de WhatsApp y abrir el chat (las notas van aquí si el cliente escribió algo)
+			// 3. Generar URL de WhatsApp pasando la info de envío
 			const whatsappUrl = buildWhatsAppUrl(business, items, {
 				name: customerName,
 				address: customerAddress,
 				notes: customerNotes,
 				paymentMethod: paymentMethod,
+				deliveryZone: selectedDeliveryZone
+					? `${selectedDeliveryZone.name} (${formatPrice(selectedDeliveryZone.price)})`
+					: "Retiro en local ($0)",
+				deliveryCost: deliveryCost,
+				totalWithDelivery: finalTotal,
 			});
 
 			window.open(whatsappUrl, "_blank");
@@ -240,7 +232,6 @@ export const Menu = (): JSX.Element => {
 			{/* Header del Negocio */}
 			<header className="bg-white shadow-sm sticky top-0 z-20">
 				<div className="max-w-md mx-auto px-4 py-4 flex items-center justify-between gap-3">
-					{/* Botón para volver al Admin (Solo visible para el dueño) */}
 					{isOwner && (
 						<a
 							href="/admin"
@@ -268,7 +259,7 @@ export const Menu = (): JSX.Element => {
 					)}
 				</div>
 
-				{/* Categorías (Incluye opción "Todos") */}
+				{/* Categorías */}
 				<div className="flex overflow-x-auto px-4 gap-2 border-t border-gray-100 py-2 scrollbar-none">
 					<button
 						type="button"
@@ -337,7 +328,6 @@ export const Menu = (): JSX.Element => {
 									</p>
 								</div>
 
-								{/* Control de Stock */}
 								{product.stock !== null &&
 								product.stock !== undefined &&
 								product.stock <= 0 ? (
@@ -389,7 +379,7 @@ export const Menu = (): JSX.Element => {
 									: "Ver mi pedido"}
 							</span>
 						</div>
-						<span>{formatPrice(getTotal())}</span>
+						<span>{formatPrice(finalTotal)}</span>
 					</button>
 				</div>
 			)}
@@ -398,7 +388,6 @@ export const Menu = (): JSX.Element => {
 			{isCartOpen && (
 				<div className="fixed inset-0 bg-black/60 z-50 flex flex-col justify-end">
 					<div className="bg-white rounded-t-3xl max-h-[85vh] flex flex-col w-full max-w-md mx-auto shadow-2xl animate-in slide-in-from-bottom duration-300">
-						{/* Header Modal */}
 						<div className="p-4 border-b border-gray-100 flex items-center justify-between">
 							<h2 className="font-bold text-lg text-gray-900">Tu Pedido</h2>
 							<button
@@ -410,7 +399,6 @@ export const Menu = (): JSX.Element => {
 							</button>
 						</div>
 
-						{/* Items del Carrito o Estado Vacío */}
 						<div className="p-4 overflow-y-auto flex-1 space-y-3">
 							{items.length === 0 ? (
 								<div className="text-center py-12 text-gray-500 space-y-3">
@@ -497,7 +485,6 @@ export const Menu = (): JSX.Element => {
 														type="button"
 														onClick={() => {
 															removeItem(item.product.id);
-															// Si al borrar el ítem el carrito queda vacío, cerramos el modal automáticamente
 															if (items.length <= 1) {
 																setIsCartOpen(false);
 															}
@@ -522,7 +509,7 @@ export const Menu = (): JSX.Element => {
 										);
 									})}
 
-									{/* Formulario de Checkout (Solo se muestra si hay items) */}
+									{/* Formulario de Checkout */}
 									<form
 										id="checkout-form"
 										onSubmit={handleCheckout}
@@ -545,7 +532,6 @@ export const Menu = (): JSX.Element => {
 												className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500"
 											/>
 										</div>
-										{/* NUEVO CAMPO DE TELÉFONO */}
 										<div>
 											<label
 												className="block text-xs font-medium text-gray-700 mb-1"
@@ -581,8 +567,51 @@ export const Menu = (): JSX.Element => {
 											/>
 										</div>
 
-										{/* NUEVO: Selector de Método de Pago */}
-										{/* Selector de Método de Pago con opción por defecto deshabilitada */}
+										{/* Selector de Zona de Delivery / Retiro */}
+										<div>
+											<label
+												className="block text-xs font-medium text-gray-700 mb-1 flex items-center gap-1"
+												htmlFor="deliveryZone"
+											>
+												<Truck size={14} className="text-emerald-600" /> Forma
+												de Entrega / Zona *
+											</label>
+											<select
+												id="deliveryZone"
+												required
+												value={selectedDeliveryZone?.id || ""}
+												onChange={(e) => {
+													if (e.target.value === "pickup-local") {
+														setSelectedDeliveryZone({
+															id: "pickup-local",
+															name: "Retiro desde el local",
+															price: 0,
+														});
+													} else {
+														const found = (
+															(business.delivery_zones as IDeliveryZone[]) || []
+														).find((z) => z.id === e.target.value);
+														setSelectedDeliveryZone(found || null);
+													}
+												}}
+												className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-emerald-500"
+											>
+												<option value="" disabled>
+													Seleccioná tu forma de entrega
+												</option>
+												<option value="pickup-local">
+													Retiro desde el local - $0
+												</option>
+												{business.has_delivery &&
+													(
+														(business.delivery_zones as IDeliveryZone[]) || []
+													).map((zone) => (
+														<option key={zone.id} value={zone.id}>
+															{zone.name} - {formatPrice(zone.price)}
+														</option>
+													))}
+											</select>
+										</div>
 										<div>
 											<label
 												className="block text-xs font-medium text-gray-700 mb-1"
@@ -634,13 +663,27 @@ export const Menu = (): JSX.Element => {
 							)}
 						</div>
 
-						{/* Footer Modal / Botón Enviar WhatsApp (Solo visible si hay items) */}
+						{/* Footer Modal / Resumen de Totales */}
 						{items.length > 0 && (
-							<div className="p-4 border-t border-gray-100 bg-gray-50">
-								<div className="flex justify-between mb-3 font-bold text-gray-900">
-									<span>Total:</span>
-									<span className="text-emerald-700">
-										{formatPrice(getTotal())}
+							<div className="p-4 border-t border-gray-100 bg-gray-50 space-y-2">
+								<div className="flex justify-between text-xs text-gray-600">
+									<span>Subtotal productos:</span>
+									<span>{formatPrice(getTotal())}</span>
+								</div>
+								{business.has_delivery && (
+									<div className="flex justify-between text-xs text-gray-600">
+										<span>
+											Costo de envío (
+											{selectedDeliveryZone?.name || "Sin seleccionar"}
+											):
+										</span>
+										<span>{formatPrice(deliveryCost)}</span>
+									</div>
+								)}
+								<div className="flex justify-between font-bold text-gray-900 pt-1 border-t border-gray-200">
+									<span>Total final:</span>
+									<span className="text-emerald-700 text-base">
+										{formatPrice(finalTotal)}
 									</span>
 								</div>
 
