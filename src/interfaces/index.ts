@@ -66,6 +66,14 @@ export interface IBusiness {
 	currency_symbol: string;
 	is_active: boolean;
 	payment_methods: string[];
+	has_delivery: boolean;
+	delivery_zones: IDeliveryZones[];
+}
+
+export interface IDeliveryZones {
+	id: string;
+	name: string;
+	price: number;
 }
 
 export interface ICategory {
