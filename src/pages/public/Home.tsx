@@ -247,18 +247,18 @@ export const Home = (): JSX.Element => {
 			<section className="max-w-4xl mx-auto px-4 pb-12">
 				<div className="bg-white border border-slate-200/90 rounded-3xl p-6 sm:p-8 shadow-sm flex flex-col md:flex-row items-center justify-between gap-6">
 					<div className="space-y-2 text-center md:text-left">
-						<div className="inline-flex items-center gap-2 bg-rose-50 text-rose-600 px-3 py-1 rounded-full text-xs font-bold">
-							<Heart size={14} className="fill-rose-500" /> Proyecto en
-							Crecimiento
+						<div className="inline-flex items-center gap-2 bg-emerald-50 text-emerald-700 px-3 py-1 rounded-full text-xs font-bold">
+							<Heart size={14} className="fill-emerald-500 text-emerald-600" />{" "}
+							Colaboración con el Proyecto
 						</div>
 						<h3 className="text-xl sm:text-2xl font-extrabold text-slate-900">
-							¿Te sirve MenuWapp? ¡Invitame un cafecito!
+							Apoyá el desarrollo independiente
 						</h3>
 						<p className="text-xs sm:text-sm text-slate-600 max-w-md leading-relaxed">
-							Actualmente podés usar la plataforma sin cargo y sin comisiones
-							por venta. Si te ayuda a vender más en tu negocio y querés
-							colaborar con el mantenimiento y desarrollo, podés hacer una
-							transferencia voluntaria con el monto que desees.
+							MenuWapp opera actualmente sin cargo y sin comisiones por venta.
+							Si la herramienta te resulta útil para tu comercio y querés
+							colaborar con el mantenimiento, servidores y mejoras continuas,
+							podés realizar una contribución voluntaria.
 						</p>
 					</div>
 
