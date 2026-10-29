@@ -11,6 +11,7 @@ import {
 	ShoppingBag,
 	Store,
 	Trash2,
+	Truck,
 	X,
 } from "lucide-react";
 import { QRCodeSVG } from "qrcode.react";
@@ -32,9 +33,9 @@ export const Dashboard = (): JSX.Element => {
 	const [uploadingImage, setUploadingImage] = useState<boolean>(false);
 	const [mobileMenuOpen, setMobileMenuOpen] = useState<boolean>(false);
 
-	// Agregamos "payment-methods" a las pestañas activas posibles
+	// Pestañas activas posibles (agregamos "delivery")
 	const [activeTab, setActiveTab] = useState<
-		"products" | "categories" | "qr" | "payment-methods" | "orders"
+		"products" | "categories" | "payment-methods" | "delivery" | "qr" | "orders"
 	>("products");
 
 	// Formularios
@@ -47,6 +48,10 @@ export const Dashboard = (): JSX.Element => {
 	const [imageFile, setImageFile] = useState<File | null>(null);
 	const [isCreatingCategory, setIsCreatingCategory] = useState(false);
 	const [quickCategoryName, setQuickCategoryName] = useState<string>("");
+
+	// Estados locales para el formulario de Delivery
+	const [zoneName, setZoneName] = useState<string>("");
+	const [zonePrice, setZonePrice] = useState<string>("");
 
 	const handleLogout = async (): Promise<void> => {
 		await supabase.auth.signOut();
@@ -203,7 +208,6 @@ export const Dashboard = (): JSX.Element => {
 		}
 	};
 
-	// Función para alternar y guardar métodos de pago en Supabase
 	const togglePaymentMethod = async (method: string) => {
 		if (!business) return;
 
@@ -228,7 +232,74 @@ export const Dashboard = (): JSX.Element => {
 		}
 	};
 
-	// 1. Agregar el handler de actualización de stock dentro de Dashboard
+	// Funciones para manejar Delivery
+	const toggleHasDelivery = async () => {
+		if (!business) return;
+		const nextValue = !business.has_delivery;
+
+		try {
+			const { error } = await supabase
+				.from("businesses")
+				.update({ has_delivery: nextValue })
+				.eq("id", business.id);
+
+			if (!error) {
+				setBusiness({ ...business, has_delivery: nextValue });
+			}
+		} catch (error) {
+			console.error("Error al actualizar estado de delivery:", error);
+		}
+	};
+
+	const handleAddDeliveryZone = async (e: React.FormEvent) => {
+		e.preventDefault();
+		if (!business || !zoneName.trim() || !zonePrice) return;
+
+		const currentZones = business.delivery_zones || [];
+		const newZone = {
+			id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(),
+			name: zoneName.trim(),
+			price: parseFloat(zonePrice),
+		};
+
+		const updatedZones = [...currentZones, newZone];
+
+		try {
+			const { error } = await supabase
+				.from("businesses")
+				.update({ delivery_zones: updatedZones })
+				.eq("id", business.id);
+
+			if (!error) {
+				setBusiness({ ...business, delivery_zones: updatedZones });
+				setZoneName("");
+				setZonePrice("");
+			}
+		} catch (error) {
+			console.error("Error al agregar zona de delivery:", error);
+		}
+	};
+
+	const handleDeleteDeliveryZone = async (zoneId: string) => {
+		if (!business) return;
+
+		const currentZones = business.delivery_zones || [];
+		const updatedZones = currentZones.filter((z) => z.id !== zoneId);
+
+		try {
+			const { error } = await supabase
+				.from("businesses")
+				.update({ delivery_zones: updatedZones })
+				.eq("id", business.id);
+
+			if (!error) {
+				setBusiness({ ...business, delivery_zones: updatedZones });
+			}
+		} catch (error) {
+			console.error("Error al eliminar zona de delivery:", error);
+		}
+	};
+
 	const handleStockChange = (productId: string, newStock: number) => {
 		setProducts((prevProducts) =>
 			prevProducts.map((p) =>
@@ -262,7 +333,6 @@ export const Dashboard = (): JSX.Element => {
 						</h1>
 					</div>
 
-					{/* Acciones en Desktop */}
 					<div className="hidden sm:flex items-center gap-3">
 						<a
 							href={publicMenuUrl}
@@ -281,7 +351,6 @@ export const Dashboard = (): JSX.Element => {
 						</button>
 					</div>
 
-					{/* Botón Hamburguesa en Mobile */}
 					<button
 						type="button"
 						onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -292,7 +361,6 @@ export const Dashboard = (): JSX.Element => {
 					</button>
 				</div>
 
-				{/* Menú Desplegable Mobile para el Header */}
 				{mobileMenuOpen && (
 					<div className="sm:hidden bg-white border-t border-gray-100 px-4 py-3 space-y-2 shadow-lg">
 						<a
@@ -349,6 +417,17 @@ export const Dashboard = (): JSX.Element => {
 						}`}
 					>
 						<CreditCard size={16} /> Métodos de Pago
+					</button>
+					<button
+						type="button"
+						onClick={() => setActiveTab("delivery")}
+						className={`cursor-pointer flex items-center gap-2 px-4 py-2 rounded-lg font-medium text-sm transition-colors whitespace-nowrap ${
+							activeTab === "delivery"
+								? "bg-emerald-600 text-white"
+								: "bg-white text-gray-600 hover:bg-gray-50"
+						}`}
+					>
+						<Truck size={16} /> Delivery
 					</button>
 					<button
 						type="button"
@@ -643,7 +722,6 @@ export const Dashboard = (): JSX.Element => {
 									</div>
 
 									<div className="flex items-center justify-between w-full sm:w-auto gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
-										{/* Controles de Stock integrados y sincronizados */}
 										<StockControl
 											productId={p.id}
 											currentStock={p.stock ?? 0}
@@ -730,7 +808,7 @@ export const Dashboard = (): JSX.Element => {
 					</div>
 				)}
 
-				{/* Pestaña NUEVA: Métodos de Pago */}
+				{/* Pestaña: Métodos de Pago */}
 				{activeTab === "payment-methods" && (
 					<div className="max-w-md bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-4">
 						<div>
@@ -773,6 +851,127 @@ export const Dashboard = (): JSX.Element => {
 								);
 							})}
 						</div>
+					</div>
+				)}
+
+				{/* Pestaña NUEVA: Delivery y Zonas */}
+				{activeTab === "delivery" && (
+					<div className="max-w-xl bg-white p-6 rounded-xl border border-gray-200 shadow-sm space-y-6">
+						<div className="flex items-center justify-between border-b border-gray-100 pb-4">
+							<div>
+								<h2 className="font-bold text-gray-800 text-base">
+									Configuración de Delivery
+								</h2>
+								<p className="text-xs text-gray-500 mt-0.5">
+									Habilitá los envíos a domicilio y configurá las zonas o
+									barrios con sus respectivos costos.
+								</p>
+							</div>
+							<label className="relative inline-flex items-center cursor-pointer">
+								<input
+									type="checkbox"
+									checked={business?.has_delivery || false}
+									onChange={toggleHasDelivery}
+									className="sr-only peer"
+								/>
+								<div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+							</label>
+						</div>
+
+						{business?.has_delivery && (
+							<div className="space-y-4">
+								<form
+									onSubmit={handleAddDeliveryZone}
+									className="bg-gray-50 p-4 rounded-xl border border-gray-200 space-y-3"
+								>
+									<h3 className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+										Agregar Nueva Zona / Barrio
+									</h3>
+									<div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+										<div>
+											<label
+												htmlFor="zoneName"
+												className="block text-xs font-semibold text-gray-600 mb-1"
+											>
+												Nombre de la Zona
+											</label>
+											<input
+												id="zoneName"
+												type="text"
+												required
+												value={zoneName}
+												onChange={(e) => setZoneName(e.target.value)}
+												placeholder="Ej. Centro, Zona Norte"
+												className="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white"
+											/>
+										</div>
+										<div>
+											<label
+												htmlFor="zonePrice"
+												className="block text-xs font-semibold text-gray-600 mb-1"
+											>
+												Costo de Envío ($)
+											</label>
+											<input
+												id="zonePrice"
+												type="number"
+												step="0.01"
+												required
+												value={zonePrice}
+												onChange={(e) => setZonePrice(e.target.value)}
+												placeholder="Ej. 1500"
+												className="w-full p-2 border border-gray-300 rounded-lg text-sm bg-white"
+											/>
+										</div>
+									</div>
+									<button
+										type="submit"
+										className="cursor-pointer w-full bg-emerald-600 hover:bg-emerald-700 text-white font-medium py-2 rounded-lg text-sm transition-colors"
+									>
+										Agregar Zona
+									</button>
+								</form>
+
+								<div className="space-y-2">
+									<h3 className="text-xs font-bold text-gray-700 uppercase tracking-wide">
+										Zonas Habilitadas ({(business?.delivery_zones || []).length}
+										)
+									</h3>
+									{(business?.delivery_zones || []).length === 0 ? (
+										<p className="text-xs text-gray-500 italic py-2">
+											No hay zonas cargadas todavía. Agregá al menos una zona
+											para que tus clientes puedan seleccionarla.
+										</p>
+									) : (
+										<div className="divide-y divide-gray-100 border border-gray-200 rounded-xl overflow-hidden">
+											{(business?.delivery_zones || []).map((zone) => (
+												<div
+													key={zone.id}
+													className="p-3 flex items-center justify-between bg-white text-sm"
+												>
+													<div>
+														<span className="font-semibold text-gray-800">
+															{zone.name}
+														</span>
+														<span className="text-xs text-emerald-700 font-bold block">
+															{formatPrice(zone.price)}
+														</span>
+													</div>
+													<button
+														type="button"
+														onClick={() => handleDeleteDeliveryZone(zone.id)}
+														className="cursor-pointer p-1.5 text-red-500 hover:bg-red-50 rounded-lg transition-colors"
+														title="Eliminar zona"
+													>
+														<Trash2 size={16} />
+													</button>
+												</div>
+											))}
+										</div>
+									)}
+								</div>
+							</div>
+						)}
 					</div>
 				)}
 
