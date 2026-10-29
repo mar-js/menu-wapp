@@ -1,7 +1,7 @@
 {
   "name": "menuwapp",
   "private": true,
-  "version": "1.1.5",
+  "version": "1.1.6",
   "description": "Plataforma SaaS de catálogos digitales con QR y pedidos por WhatsApp para emprendedores.",
   "author": {
     "name": "Martín Agüera",
