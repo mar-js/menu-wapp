@@ -14,6 +14,22 @@ y este proyecto adhiere a [Semantic Versioning](https://semver.org/lang/es/).
 
 ---
 
+## [1.1.6] - 2026-10-29
+
+### Added
+
+- **Soporte de Delivery y Zonas de Envío (`Dashboard.tsx` & `Menu.tsx`):**
+  - Nueva pestaña en el panel de administración para habilitar/deshabilitar envíos a domicilio y gestionar zonas personalizadas con sus respectivos costos.
+  - Selector unificado de forma de entrega en el menú público, incluyendo por defecto la opción "Retiro desde el local - $0".
+  - Desglose automatizado del subtotal, costo de envío y total final en el mensaje generado para WhatsApp.
+
+### Changed
+
+- **Formato de Mensajería (`whatsapp.ts`):**
+  - Eliminación de emojis en los tickets de WhatsApp para garantizar compatibilidad total de codificación en cualquier dispositivo.
+
+---
+
 ## [1.1.5] - 2026-10-29
 
 ### Changed
