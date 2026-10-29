@@ -1,5 +1,15 @@
 import type { JSX, LazyExoticComponent } from "react";
 
+export interface ICheckoutDetails {
+	name: string;
+	address: string;
+	notes?: string;
+	paymentMethod: string;
+	deliveryZone?: string;
+	deliveryCost?: number;
+	totalWithDelivery?: number;
+}
+
 export interface IOrderItem {
 	product_id: string;
 	name: string;
