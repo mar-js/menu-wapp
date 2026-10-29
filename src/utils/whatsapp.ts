@@ -1,54 +1,43 @@
-import type { IBusiness, ICartItem } from "../interfaces";
-import { formatPrice } from "./formatPrice";
+import type { IBusiness, ICartItem, ICheckoutDetails } from "../interfaces";
 
 export const buildWhatsAppUrl = (
 	business: IBusiness,
-	cart: ICartItem[],
-	customerDetails: {
-		name: string;
-		address: string;
-		notes?: string;
-		paymentMethod: string; // <-- Campo para el método de pago
-	},
+	items: ICartItem[],
+	details: ICheckoutDetails,
 ): string => {
-	let message = `*NUEVO PEDIDO: ${business.name.toUpperCase()}*\n`;
-	message += `==============================\n\n`;
+	const phone = business.whatsapp_number || "";
 
-	message += `*Cliente:* ${customerDetails.name}\n`;
-	message += `*Dirección:* ${customerDetails.address}\n`;
+	let message = `*¡Hola! Nuevo Pedido desde MenuWapp* 🛒\n\n`;
+	message += `👤 *Cliente:* ${details.name}\n`;
+	message += `📍 *Dirección:* ${details.address}\n`;
+	message += `🚚 *Envío:* ${details.deliveryZone || "Retiro en local"}\n`;
+	message += `💳 *Pago:* ${details.paymentMethod}\n`;
 
-	// Incluimos el método de pago seleccionado
-	message += `*Método de pago:* ${customerDetails.paymentMethod}\n`;
-
-	if (customerDetails.notes && customerDetails.notes.trim() !== "") {
-		message += `*Notas:* ${customerDetails.notes}\n`;
+	if (details.notes) {
+		message += `📝 *Notas:* ${details.notes}\n`;
 	}
 
-	message += `\n==============================\n`;
-	message += `*DETALLE DEL PEDIDO*\n`;
-	message += `==============================\n`;
+	message += `\n*Detalle del pedido:*\n`;
 
-	let total = 0;
-
-	cart.forEach((item) => {
-		const subtotal = item.product.price * item.quantity;
-		total += subtotal;
-
-		message += `• *${item.quantity}x* ${item.product.name}\n`;
-		message += `   Subtotal: ${formatPrice(subtotal)}\n`;
-
-		if (item.notes && item.notes.trim() !== "") {
-			message += `   _Nota: ${item.notes}_\n`;
-		}
+	items.forEach((item) => {
+		const itemTotal = item.product.price * item.quantity;
+		message += `• ${item.quantity}x ${item.product.name} ($${item.product.price.toLocaleString("es-AR")} c/u) = $${itemTotal.toLocaleString("es-AR")}\n`;
 	});
 
-	message += `==============================\n`;
-	message += `*TOTAL A PAGAR: ${formatPrice(total)}*\n`;
-	message += `==============================\n`;
-	message += `_Enviado a través de MenuWapp_`;
+	const subtotal = items.reduce(
+		(acc, item) => acc + item.product.price * item.quantity,
+		0,
+	);
+	const delivery = details.deliveryCost || 0;
+	const total = details.totalWithDelivery || subtotal + delivery;
 
-	const cleanPhone = business.whatsapp_number.replace(/\D/g, "");
-	const encodedText = encodeURIComponent(message);
+	message += `\n------------------\n`;
+	message += `📦 *Subtotal:* $${subtotal.toLocaleString("es-AR")}\n`;
+	if (delivery > 0) {
+		message += `🛵 *Envío:* $${delivery.toLocaleString("es-AR")}\n`;
+	}
+	message += `💰 *TOTAL A PAGAR:* *$${total.toLocaleString("es-AR")}*`;
 
-	return `https://wa.me/${cleanPhone}?text=${encodedText}`;
+	const encodedMessage = encodeURIComponent(message);
+	return `https://wa.me/${phone}?text=${encodedMessage}`;
 };
